@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="crawler">
+    <select id="GetBotConfig" parameterType="java.util.Map" resultType="java.util.Map" useCache="false" statementType="PREPARED">
+    <![CDATA[
+        SELECT `key`,`value`
+        FROM botconfig
+        WHERE botname=#{botName}
+    ]]>
+    </select>
+    <insert id="CreateNewRent" parameterType="java.util.Map" statementType="PREPARED">
+    <![CDATA[
+        INSERT into rent(site, url, imageUrl, description, price, createuser, createdate)
+        SELECT * FROM (SELECT '591', #{url}, #{imageUrl}, #{description}, #{price}, 'crawler', utc_timestamp()) AS temp
+        WHERE NOT EXISTS(SELECT 1 FROM rent WHERE url=#{url})
+    ]]>
+    </insert>
+</mapper>
