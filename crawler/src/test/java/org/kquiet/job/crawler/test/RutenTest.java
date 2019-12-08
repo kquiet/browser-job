@@ -8,11 +8,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+
 import org.kquiet.job.crawler.test.ruten.LaunchItem;
 import org.kquiet.jobscheduler.JobController;
 
 public class RutenTest {
-  private static CountDownLatch latch = null;
+  private CountDownLatch latch = null;
 
   public RutenTest() {
   }

@@ -9,12 +9,9 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 
 public class SqlTimestampSerializer extends JsonSerializer<Timestamp> {
-  private static final SimpleDateFormat DEFAULT_FORMAT =
-      new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
   @Override
   public void serialize(Timestamp value, JsonGenerator jgen, SerializerProvider provider)
       throws IOException {
-    jgen.writeString(DEFAULT_FORMAT.format(value));
+    jgen.writeString(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(value));
   }
 }

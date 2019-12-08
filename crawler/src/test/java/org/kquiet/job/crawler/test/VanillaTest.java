@@ -19,8 +19,8 @@ import org.kquiet.jobscheduler.JobBase;
 import org.kquiet.jobscheduler.JobController;
 
 public class VanillaTest {
-  private static CountDownLatch latch = null;
-  private static final List<String> parameterValueList = new ArrayList<>();
+  private CountDownLatch latch = null;
+  private final List<String> parameterValueList = new ArrayList<>();
 
   @BeforeAll
   public static void setUpClass() {

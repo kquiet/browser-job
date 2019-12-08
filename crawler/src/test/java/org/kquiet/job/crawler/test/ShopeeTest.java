@@ -12,7 +12,7 @@ import org.kquiet.job.crawler.test.shopee.LaunchItem;
 import org.kquiet.jobscheduler.JobController;
 
 public class ShopeeTest {
-  private static CountDownLatch latch = null;
+  private CountDownLatch latch = null;
 
   public ShopeeTest() {
   }
