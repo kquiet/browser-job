@@ -176,6 +176,7 @@
     
     <logger name="org.apache.ibatis.datasource.pooled.PooledDataSource" level="WARN" />
     <logger name="org.apache.ibatis.transaction.jdbc.JdbcTransaction" level="WARN" />
+    <logger name="io" additivity="false" />
     
     <shutdownHook class="ch.qos.logback.core.hook.DelayingShutdownHook" />
 </configuration>

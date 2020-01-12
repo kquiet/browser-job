@@ -3,6 +3,8 @@ package org.kquiet.job.crawler;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.kquiet.jobscheduler.JobBase;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,16 +13,16 @@ public class CommonBiz {
 
   private final CommonDao dao;
 
-  CommonBiz() {
-    dao = new CommonDao();
+  CommonBiz(JobBase job) {
+    this.dao = new CommonDao(job);
   }
 
-  Map<String, String> getBotConfig(String botName) {
-    return dao.getBotConfig(botName);
+  Map<String, String> getBotConfig() {
+    return dao.getBotConfig();
   }
 
-  int createRent(String url, String imageUrl, String description, String price) {
-    return dao.createRent(url, imageUrl, description, price);
+  int createCase(String url, String imageUrl, String description, String price) {
+    return dao.createCase(url, imageUrl, description, price);
   }
 
   boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {

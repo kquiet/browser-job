@@ -34,6 +34,18 @@
         </dependency>
         
         <dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>28.2-jre</version>
+		</dependency>
+        
+        <dependency>
+			<groupId>io.etcd</groupId>
+			<artifactId>jetcd-core</artifactId>
+			<version>0.4.1</version>
+		</dependency>
+        
+        <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>5.1.44</version>
@@ -87,6 +99,13 @@
             </testResource>
         </testResources>
         <plugins>
+	        <plugin>
+		        <artifactId>maven-enforcer-plugin</artifactId>
+		        <version>3.0.0-M3</version>
+		        <configuration>
+		            <rules><dependencyConvergence/></rules>
+		        </configuration>
+		    </plugin>
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <executions>

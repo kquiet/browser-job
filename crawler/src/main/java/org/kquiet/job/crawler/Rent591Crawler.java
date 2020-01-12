@@ -28,8 +28,9 @@ public class Rent591Crawler extends BasicActionComposer {
 
   private void config(JobBase job) {
     try {
-      CommonBiz bizObj = new CommonBiz();
-      Map<String, String> configMap = bizObj.getBotConfig(job.getParameter("botName"));
+      CommonBiz bizObj = new CommonBiz(job);
+      String botName = job.getParameter("botName");
+      Map<String, String> configMap = bizObj.getBotConfig();
       String area = configMap.get("area");
       String entryUrl = configMap.get("entryUrl");
       String chatId = configMap.get("chatId");
@@ -87,19 +88,19 @@ public class Rent591Crawler extends BasicActionComposer {
                 String price = priceE.getText();
     
                 //save for each
-                int createResult = bizObj.createRent(url, imageUrl, description, price);  
+                int createResult = bizObj.createCase(url, imageUrl, description, price);  
                 if (createResult == 1) {
-                  LOGGER.info(String.format("Rent:%s created", url));
+                  LOGGER.info(String.format("Case:%s created", url));
                   //notify
                   if (!"".equals(chatId)) {
                     bizObj.notifyTelegram(chatToken, chatId, imageUrl,
                         String.format("%s %s %s", url, description, price));
                   }
                 } else if (createResult == -1) {
-                  LOGGER.info(String.format("Rent:%s create failed", url));
+                  LOGGER.info(String.format("Case:%s create failed", url));
                 }
               } catch (Exception ex) {
-                LOGGER.warn("Rent element parse error", ex);
+                LOGGER.warn("Case element parse error", ex);
               }
             }
           })
