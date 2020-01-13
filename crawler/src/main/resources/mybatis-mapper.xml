@@ -4,9 +4,9 @@
 <mapper namespace="crawler">
     <insert id="CreateCase" parameterType="java.util.Map" statementType="PREPARED">
     <![CDATA[
-        INSERT into case(site, url, imageUrl, description, price, createuser, createdate)
+        INSERT into house(site, url, imageUrl, description, price, createuser, createdate)
         SELECT * FROM (SELECT '591', #{url}, #{imageUrl}, #{description}, #{price}, #{createUser}, utc_timestamp()) AS temp
-        WHERE NOT EXISTS(SELECT 1 FROM case WHERE url=#{url})
+        WHERE NOT EXISTS(SELECT 1 FROM house WHERE url=#{url})
     ]]>
     </insert>
 </mapper>
