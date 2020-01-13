@@ -6,7 +6,7 @@
     <![CDATA[
         INSERT into case(site, url, imageUrl, description, price, createuser, createdate)
         SELECT * FROM (SELECT '591', #{url}, #{imageUrl}, #{description}, #{price}, #{createUser}, utc_timestamp()) AS temp
-        WHERE NOT EXISTS(SELECT 1 FROM rent WHERE url=#{url})
+        WHERE NOT EXISTS(SELECT 1 FROM case WHERE url=#{url})
     ]]>
     </insert>
 </mapper>
