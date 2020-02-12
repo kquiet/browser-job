@@ -151,6 +151,7 @@
                                     <filtering>true</filtering>
                                     <includes>
                                         <include>Dockerfile</include>
+                                        <include>**/*.sh</include>
                                         <include>**/*.xml</include>
                                         <include>**/*.config</include>
                                     </includes>
