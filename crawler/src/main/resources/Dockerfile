@@ -7,6 +7,8 @@ RUN echo '@edgetesting http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /et
  && echo "Asia/Taipei" > /etc/timezone \
  && rm -f lib/*
 
-COPY ["logback.xml", "${project.build.finalName}.jar", "lib", "./ext/"]
+COPY ["jobscheduler.config", "mybatis-config.xml", "mybatis-mapper.xml", "logback.xml", "${project.build.finalName}.jar", "lib", "./ext/"]
 
-COPY ["jobscheduler.config", "mybatis-config.xml", "mybatis-mapper.xml", "./ext/"]
+COPY ["jobscheduler.sh", "./"]
+
+RUN chmod +x ./jobscheduler.sh
