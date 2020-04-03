@@ -1,5 +1,6 @@
 package org.kquiet.job.crawler.util;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.ArrayList;
@@ -7,6 +8,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.fluent.Request;
 import org.apache.http.client.fluent.Response;
 
@@ -58,101 +60,65 @@ public final class NetUtility {
     }
     return resultList;
   }
-
-  public static Response httpGet(String url, Map<String, String> header) {
-    return httpMethod("GET", url, header, null, 0);
-  }
-
-  public static Response httpPost(String url, Map<String, String> header, byte[] body) {
-    return httpMethod("POST", url, header, body, 0);
-  }
-
-  public static Response httpPut(String url, Map<String, String> header, byte[] body) {
-    return httpMethod("PUT", url, header, body, 0);
-  }
-
-  public static Response httpDelete(String url, Map<String, String> header) {
-    return httpMethod("DELETE", url, header, null, 0);
-  }
-
-  public static Response httpOptions(String url, Map<String, String> header) {
-    return httpMethod("OPTIONS", url, header, null, 0);
-  }
-
-  public static Response httpTrace(String url, Map<String, String> header) {
-    return httpMethod("TRACE", url, header, null, 0);
-  }
-
-  public static Response httpHead(String url, Map<String, String> header) {
-    return httpMethod("HEAD", url, header, null, 0);
-  }
-
-  public static Response httpPatch(String url, Map<String, String> header, byte[] body) {
-    return httpMethod("PATCH", url, header, body, 0);
+  
+  /**
+   * Add headers to given {@code Request}.
+   * 
+   * @param r request
+   * @param header headers to add
+   * @return
+   */
+  public static Request addHeader(Request r, Map<String, String> header) {
+    if (header != null && !header.isEmpty()) {
+      for (Map.Entry<String,String> entry:header.entrySet()) {
+        r.addHeader(entry.getKey(), entry.getValue());
+      }
+    }
+    return r;
   }
 
   /**
-   * Simple HTTP method with header.
+   * Create a new http request.
+   * 
+   * @param method http method
+   * @param url target url
+   * @return
    */
-  public static Response httpMethod(String method, String url,
-      Map<String, String> header, byte[] body, int connectTimeout) {
-    try {
-      if (connectTimeout == 0) {
-        connectTimeout = 30000;
-      }
-      if (method == null) {
-        method = "GET";
-      }
-      method = method.toUpperCase();
-
-      Request r = null;
-      switch (method) {
-        case "GET":
-          r = Request.Get(url);
-          break;
-        case "POST":
-          r = Request.Post(url);
-          if (body != null) {
-            r.bodyByteArray(body);
-          }
-          break;
-        case "PUT":
-          r = Request.Put(url);
-          if (body != null) {
-            r.bodyByteArray(body);
-          }
-          break;
-        case "DELETE":
-          r = Request.Delete(url);
-          break;
-        case "OPTIONS":
-          r = Request.Options(url);
-          break;
-        case "TRACE":
-          r = Request.Trace(url);
-          break;
-        case "HEAD":
-          r = Request.Head(url);
-          break;
-        case "PATCH":
-          r = Request.Patch(url);
-          if (body != null) {
-            r.bodyByteArray(body);
-          }
-          break;
-        default:
-          throw new Exception("Not supported method:" + method);
-      }
-      r.connectTimeout(connectTimeout);
-      if (header != null && !header.isEmpty()) {
-        for (Map.Entry<String,String> entry:header.entrySet()) {
-          r.addHeader(entry.getKey(), entry.getValue());
-        }
-      }
-
-      return r.execute();
-    } catch (Exception ex) {
-      throw new RuntimeException(ex);
+  public static Request httpRequest(String method, String url) {
+    if (method == null) {
+      method = "GET";
     }
+    method = method.toUpperCase();
+
+    Request r = null;
+    switch (method) {
+      case "GET":
+        r = Request.Get(url);
+        break;
+      case "POST":
+        r = Request.Post(url);
+        break;
+      case "PUT":
+        r = Request.Put(url);
+        break;
+      case "DELETE":
+        r = Request.Delete(url);
+        break;
+      case "OPTIONS":
+        r = Request.Options(url);
+        break;
+      case "TRACE":
+        r = Request.Trace(url);
+        break;
+      case "HEAD":
+        r = Request.Head(url);
+        break;
+      case "PATCH":
+        r = Request.Patch(url);
+        break;
+      default:
+        throw new UnsupportedOperationException("Not supported method:" + method);
+    }
+    return r;
   }
 }

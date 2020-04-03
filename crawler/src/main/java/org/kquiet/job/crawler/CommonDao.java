@@ -9,14 +9,23 @@ import io.etcd.jetcd.KeyValue;
 import io.etcd.jetcd.kv.GetResponse;
 import io.etcd.jetcd.options.GetOption;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.fluent.Request;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -92,19 +101,85 @@ public class CommonDao {
       return -1;
     }
   }
+  
+  boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {
+    String apiUrl = "https://api.telegram.org/bot" + token + "/sendPhoto";
+    Map<String, Object> jsonBodyParam = new HashMap<>();
+    jsonBodyParam.put("chat_id", chatId);
+    jsonBodyParam.put("photo", imageUrl);
+    jsonBodyParam.put("caption", caption);
+    try {
+      HttpResult result = httpJson("post", apiUrl, jsonBodyParam);
+      LOGGER.debug("notifyTelegram result:{} {}", result.getStatusCode(), result.getResponse());
+      return true;
+    } catch (Exception ex) {
+      LOGGER.warn("notifyTelegram fail:{}", caption, ex);
+      return false;
+    }
+  }
+  
+  boolean notifyTelegram(String token, String chatId, File photo, String caption) {
+    String apiUrl = "https://api.telegram.org/bot" + token + "/sendPhoto";
+    HttpEntity entity = MultipartEntityBuilder.create()
+        .setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
+        .addBinaryBody("photo", photo, ContentType.MULTIPART_FORM_DATA, null)
+        .addTextBody("chat_id", chatId)
+        .addTextBody("caption", caption)
+        .build();
+    
+    try {
+      HttpResult result = http("post", apiUrl, entity);
+      LOGGER.debug("notifyTelegram result:{} {}", result.getStatusCode(), result.getResponse());
+      return true;
+    } catch (Exception ex) {
+      LOGGER.warn("notifyTelegram fail:{}", caption, ex);
+      return false;
+    }
+  }
 
-  HttpApiResult httpApiJson(String httpMethod,
-      String url, Map<String,Object> jsonBodyParam) throws Exception {
-    Map<String, String> httpHeader = new HashMap<>();
-    httpHeader.put("Content-type", "application/json; charset=UTF-8");
-
+  HttpResult httpJson(String httpMethod, String url, Map<String,Object> jsonBodyParam)
+      throws ClientProtocolException, IOException {
+    Consumer<Request> consumer = (r) -> {};
+    
+    if (jsonBodyParam != null && !jsonBodyParam.isEmpty()) {
+      Map<String, String> httpHeader = new HashMap<>();
+      httpHeader.put("Content-type", "application/json; charset=UTF-8");
+      
+      byte[] body = objectMapper.writeValueAsString(jsonBodyParam).getBytes("UTF-8");
+      
+      consumer = (r) -> {
+        NetUtility.addHeader(r, httpHeader);
+        r.bodyByteArray(body);
+      };
+    }   
+    
+    return http(httpMethod, url, consumer);
+  }
+  
+  HttpResult http(String httpMethod, String url, HttpEntity bodyEntity)
+      throws ClientProtocolException, IOException {
+    Consumer<Request> consumer = (r) -> {};
+    
+    if (bodyEntity != null) {
+      consumer = (r) -> {
+        r.body(bodyEntity);
+      };
+    }
+    
+    return http(httpMethod, url, consumer);
+  }
+  
+  private HttpResult http(String httpMethod, String url, Consumer<Request> requestConsumer)
+      throws ClientProtocolException, IOException {
     HttpResponse resp = null;
     try {
-      resp = NetUtility.httpMethod(httpMethod, url, httpHeader,
-          objectMapper.writeValueAsString(jsonBodyParam).getBytes("UTF-8"), 0).returnResponse();
+      Request req = NetUtility.httpRequest(httpMethod, url).connectTimeout(30000);
+      requestConsumer.accept(req);
+      
+      resp = req.execute().returnResponse();
       int statusCode = resp.getStatusLine().getStatusCode();
       String response = EntityUtils.toString(resp.getEntity(), "UTF-8");
-      return new HttpApiResult(statusCode, response);
+      return new HttpResult(statusCode, response);
     } finally {
       if (resp != null) {
         EntityUtils.consume(resp.getEntity());
@@ -112,11 +187,11 @@ public class CommonDao {
     }
   }
 
-  public class HttpApiResult {
+  public class HttpResult {
     private final int statusCode;
     private final String response;
 
-    public HttpApiResult(int statusCode, String response) {
+    public HttpResult(int statusCode, String response) {
       this.statusCode = statusCode;
       this.response = response;
     }

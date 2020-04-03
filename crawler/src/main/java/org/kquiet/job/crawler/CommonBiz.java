@@ -1,6 +1,6 @@
 package org.kquiet.job.crawler;
 
-import java.util.HashMap;
+import java.io.File;
 import java.util.Map;
 
 import org.kquiet.jobscheduler.JobBase;
@@ -26,18 +26,10 @@ public class CommonBiz {
   }
 
   boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {
-    String apiUrl = "https://api.telegram.org/bot" + token + "/sendPhoto";
-    Map<String, Object> jsonBodyParam = new HashMap<>();
-    jsonBodyParam.put("chat_id", chatId);
-    jsonBodyParam.put("photo", imageUrl);
-    jsonBodyParam.put("caption", caption);
-    try {
-      CommonDao.HttpApiResult result = dao.httpApiJson("post",apiUrl, jsonBodyParam);
-      LOGGER.debug("notifyTelegram result:{} {}", result.getStatusCode(), result.getResponse());
-      return true;
-    } catch (Exception ex) {
-      LOGGER.warn("notifyTelegram fail:{}", caption, ex);
-      return false;
-    }
+    return dao.notifyTelegram(token, chatId, imageUrl, caption);
+  }
+  
+  boolean notifyTelegram(String token, String chatId, File photo, String caption) {
+    return dao.notifyTelegram(token, chatId, photo, caption);
   }
 }
