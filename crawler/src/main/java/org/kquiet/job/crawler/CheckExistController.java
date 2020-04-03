@@ -63,8 +63,12 @@ public class CheckExistController extends JobBase {
         new ActionComposerBuilder()
           .prepareActionSequence()
             .getUrl(checkUrl)
-            .waitUntil(ExpectedConditions.visibilityOfElementLocated(
+            .prepareWaitUntil(ExpectedConditions.visibilityOfElementLocated(
                 By.xpath(existPattern)), timeout)
+              .withTimeoutCallback(ac -> {
+                this.setMessage("Not exist after checking");
+                ac.skipToSuccess();
+              }).done()
             .scrollToView(By.xpath(existPattern), false)
             .custom(ac -> {  
               File screenshot = ((TakesScreenshot)ac.getWebDriver())
@@ -82,20 +86,16 @@ public class CheckExistController extends JobBase {
               if (errList.size() > 0) {
                 this.setMessage(errList.get(errList.size() - 1).getMessage());
               }
-            } else {
-              this.setMessage(String.format("Fail crawler:%s", this.getMessage()));
             }
     
             if (Arrays.asList(ResultStatus.AlertFail).contains(this.getResultStatus())) {
               //NOTHING TODO
             }
     
-            LOGGER.info("{} fail:", this.getMessage());
+            LOGGER.info("{} fail: {}", getName(), this.getMessage());
           })
           .onSuccess(ac -> {
-            this.setMessage(String.format("Success crawler:%s", this.getMessage()));
-    
-            LOGGER.info("{} succeed:", getName());
+            LOGGER.info("{} succeed: {}", getName(), this.getMessage());
           })
           .onDone(ac -> {
             if (ac.isFail()) {

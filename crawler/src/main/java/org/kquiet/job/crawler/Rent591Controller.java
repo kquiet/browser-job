@@ -133,20 +133,16 @@ public class Rent591Controller extends JobBase {
               if (errList.size() > 0) {
                 this.setMessage(errList.get(errList.size() - 1).getMessage());
               }
-            } else {
-              this.setMessage(String.format("Fail crawler:%s", this.getMessage()));
             }
     
             if (Arrays.asList(ResultStatus.AlertFail).contains(this.getResultStatus())) {
               //NOTHING TODO
             }
     
-            LOGGER.info("{} fail:", this.getMessage());
+            LOGGER.info("{} fail: {}", getName(), this.getMessage());
           })
           .onSuccess(ac -> {
-            this.setMessage(String.format("Success crawler:%s", this.getMessage()));
-    
-            LOGGER.info("{} succeed:", getName());
+            LOGGER.info("{} succeed:", getName(), this.getMessage());
           })
           .onDone(ac -> {
             if (ac.isFail()) {
