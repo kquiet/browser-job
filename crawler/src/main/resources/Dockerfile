@@ -1,4 +1,4 @@
-FROM kquiet/job-scheduler:1.0.0
+FROM kquiet/job-scheduler:${jobscheduler.version}
 
 RUN echo '@edgetesting http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories \
  && apk update \
