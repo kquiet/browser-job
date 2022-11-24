@@ -8,27 +8,29 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
 import org.kquiet.jobscheduler.JobBase;
 import org.kquiet.jobscheduler.JobController;
 
+/**
+ * VanillaTest.
+ *
+ * @author monkey
+ *
+ */
 public class VanillaTest {
   private CountDownLatch latch = null;
   private final List<String> parameterValueList = new ArrayList<>();
 
   @BeforeAll
-  public static void setUpClass() {
-  }
+  public static void setUpClass() {}
 
   @AfterAll
-  public static void tearDownClass() {
-  }
+  public static void tearDownClass() {}
 
   @BeforeEach
   public void setUp() {
@@ -36,8 +38,7 @@ public class VanillaTest {
   }
 
   @AfterEach
-  public void tearDown() {
-  }
+  public void tearDown() {}
 
   @Test
   public void controllerTest() {
@@ -52,15 +53,14 @@ public class VanillaTest {
     } catch (Exception ex) {
       System.err.println(ex.toString());
     }
-    //try{Thread.sleep(3600000);}catch(Exception x) {}
+    // try{Thread.sleep(3600000);}catch(Exception x) {}
     controller.stop();
     assertAll(
         () -> assertEquals("CrawlerTest", job1.getInstanceName(), "Wrong instance name on job1"),
         () -> assertEquals("CrawlerTest", job2.getInstanceName(), "Wrong instance name on job2"),
         () -> assertEquals(2, parameterValueList.size(), "Wrong parameter value size"),
-        () -> assertEquals("VanillaTest2,VanillaTest1",
-            String.join(",", parameterValueList), "Wrong parameter value sequence")
-    );
+        () -> assertEquals("VanillaTest2,VanillaTest1", String.join(",", parameterValueList),
+            "Wrong parameter value sequence"));
   }
 
   class TestJobBase extends JobBase {

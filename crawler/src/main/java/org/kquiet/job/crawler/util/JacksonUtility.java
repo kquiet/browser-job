@@ -4,12 +4,18 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+/**
+ * JacksonUtility.
+ *
+ * @author monkey
+ *
+ */
 public final class JacksonUtility {
-  private JacksonUtility(){}
+  private JacksonUtility() {}
 
   /**
    * Get default mapper for json.
-   * 
+   *
    * @return object mapper
    */
   public static ObjectMapper getDefaultMapperForJson() {

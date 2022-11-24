@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.jobscheduler.JobBase;
@@ -15,6 +14,12 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * CheckExistController.
+ *
+ * @author monkey
+ *
+ */
 public class CheckExistController extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(CheckExistController.class);
 
@@ -60,54 +65,45 @@ public class CheckExistController extends JobBase {
         String chatId = configMap.get("chatId");
         String chatToken = configMap.get("chatToken");
 
-        new ActionComposerBuilder()
-          .prepareActionSequence()
-            .getUrl(checkUrl)
-            .prepareWaitUntil(ExpectedConditions.visibilityOfElementLocated(
-                By.xpath(existPattern)), timeout)
-              .withTimeoutCallback(ac -> {
-                this.setMessage("Not exist after checking");
-                ac.skipToSuccess();
-              }).done()
-            .scrollToView(By.xpath(existPattern), false)
-            .custom(ac -> {  
-              File screenshot = ((TakesScreenshot)ac.getWebDriver())
-                  .getScreenshotAs(OutputType.FILE);
-      
-              //notify
+        new ActionComposerBuilder().prepareActionSequence().getUrl(checkUrl)
+            .prepareWaitUntil(ExpectedConditions.visibilityOfElementLocated(By.xpath(existPattern)),
+                timeout)
+            .withTimeoutCallback(ac -> {
+              this.setMessage("Not exist after checking");
+              ac.skipToSuccess();
+            }).done().scrollToView(By.xpath(existPattern), false).custom(ac -> {
+              File screenshot =
+                  ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);
+
+              // notify
               if (!"".equals(chatId)) {
                 bizObj.notifyTelegram(chatToken, chatId, screenshot, checkUrl);
               }
-            })
-          .returnToComposerBuilder()
-          .onFail(ac -> {
-            if (this.getMessage() == null || "".equals(this.getMessage())) {
-              List<Exception> errList = ac.getErrors();
-              if (errList.size() > 0) {
-                this.setMessage(errList.get(errList.size() - 1).getMessage());
+            }).returnToComposerBuilder().onFail(ac -> {
+              if (this.getMessage() == null || "".equals(this.getMessage())) {
+                List<Exception> errList = ac.getErrors();
+                if (errList.size() > 0) {
+                  this.setMessage(errList.get(errList.size() - 1).getMessage());
+                }
               }
-            }
-    
-            if (Arrays.asList(ResultStatus.AlertFail).contains(this.getResultStatus())) {
-              //NOTHING TODO
-            }
-    
-            LOGGER.info("{} fail: {}", getName(), this.getMessage());
-          })
-          .onSuccess(ac -> {
-            LOGGER.info("{} succeed: {}", getName(), this.getMessage());
-          })
-          .onDone(ac -> {
-            if (ac.isFail()) {
-              //alert for some cases
-              if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)
-                  .contains(this.getResultStatus())
-                  && (ac.getFailUrl() != null || ac.getFailPage() != null)) {
-                //NOTHING TODO
+
+              if (Arrays.asList(ResultStatus.AlertFail).contains(this.getResultStatus())) {
+                // NOTHING TODO
               }
-            }
-          })
-          .build(this, "CheckExistCrawler(" + checkUrl + ")");
+
+              LOGGER.info("{} fail: {}", getName(), this.getMessage());
+            }).onSuccess(ac -> {
+              LOGGER.info("{} succeed: {}", getName(), this.getMessage());
+            }).onDone(ac -> {
+              if (ac.isFail()) {
+                // alert for some cases
+                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)
+                    .contains(this.getResultStatus())
+                    && (ac.getFailUrl() != null || ac.getFailPage() != null)) {
+                  // NOTHING TODO
+                }
+              }
+            }).build(this, "CheckExistCrawler(" + checkUrl + ")");
       } catch (Exception ex) {
         LOGGER.error("Create crawler error!", ex);
       }
@@ -129,18 +125,17 @@ public class CheckExistController extends JobBase {
       this.message = message;
     }
   }
-  
+
   private static enum ResultStatus {
-    AlertFail("AlertFail"),
-    WaitingToDo("WaitingToDo"),
-    Success("Success"),
-    UnknownFail("UnknownFail");
+    AlertFail("AlertFail"), WaitingToDo("WaitingToDo"), Success("Success"), UnknownFail(
+        "UnknownFail");
 
     private final String name;
+
     private ResultStatus(String name) {
       this.name = name;
     }
-    
+
     @Override
     public String toString() {
       return this.name;

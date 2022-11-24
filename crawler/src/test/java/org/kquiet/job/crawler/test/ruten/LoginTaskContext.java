@@ -2,6 +2,12 @@ package org.kquiet.job.crawler.test.ruten;
 
 import org.kquiet.browser.BasicActionComposer;
 
+/**
+ * LoginTaskContext.
+ *
+ * @author monkey
+ *
+ */
 public class LoginTaskContext extends BasicActionComposer {
   private LoginResultStatus loginResultStatus = LoginResultStatus.WaitingToLogin;
   private String contextMessage;
@@ -18,18 +24,22 @@ public class LoginTaskContext extends BasicActionComposer {
     this.loginResultStatus = st;
   }
 
+  /**
+   * LoginResultStatus.
+   *
+   * @author monkey
+   *
+   */
   public enum LoginResultStatus {
-    WaitingToLogin("WaitingToLogin"),
-    DifferentLogin("DifferentLogin"),
-    WaitSms("WaitSms"),
-    Success("Success"),
-    UnknownFail("UnknownFail");
+    WaitingToLogin("WaitingToLogin"), DifferentLogin("DifferentLogin"), WaitSms("WaitSms"), Success(
+        "Success"), UnknownFail("UnknownFail");
 
     private final String name;
+
     private LoginResultStatus(String name) {
       this.name = name;
     }
-    
+
     public String toString() {
       return this.name;
     }

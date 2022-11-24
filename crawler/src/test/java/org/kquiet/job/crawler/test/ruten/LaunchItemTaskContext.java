@@ -2,6 +2,12 @@ package org.kquiet.job.crawler.test.ruten;
 
 import org.kquiet.browser.BasicActionComposer;
 
+/**
+ * LaunchItemTaskContext.
+ *
+ * @author monkey
+ *
+ */
 public class LaunchItemTaskContext extends BasicActionComposer {
   private LaunchItemResultStatus resultStatus = LaunchItemResultStatus.WaitingToLaunch;
 
@@ -17,16 +23,21 @@ public class LaunchItemTaskContext extends BasicActionComposer {
     this.resultStatus = st;
   }
 
+  /**
+   * LaunchItemResultStatus.
+   *
+   * @author monkey
+   *
+   */
   public enum LaunchItemResultStatus {
-    WaitingToLaunch("WaitingToLaunch"),
-    Success("Success"),
-    UnknownFail("UnknownFail");
+    WaitingToLaunch("WaitingToLaunch"), Success("Success"), UnknownFail("UnknownFail");
 
     private final String name;
+
     private LaunchItemResultStatus(String name) {
       this.name = name;
     }
-    
+
     public String toString() {
       return this.name;
     }

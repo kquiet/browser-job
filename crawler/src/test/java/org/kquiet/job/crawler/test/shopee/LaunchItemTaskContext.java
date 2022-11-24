@@ -2,6 +2,12 @@ package org.kquiet.job.crawler.test.shopee;
 
 import org.kquiet.browser.BasicActionComposer;
 
+/**
+ * LaunchItemTaskContext.
+ *
+ * @author monkey
+ *
+ */
 public class LaunchItemTaskContext extends BasicActionComposer {
   private LaunchItemResultStatus resultStatus = LaunchItemResultStatus.WaitingToLaunch;
   private String contextMessage;
@@ -18,17 +24,22 @@ public class LaunchItemTaskContext extends BasicActionComposer {
     this.resultStatus = st;
   }
 
+  /**
+   * LaunchItemResultStatus.
+   *
+   * @author monkey
+   *
+   */
   public enum LaunchItemResultStatus {
-    WaitingToLaunch("WaitingToLaunch"),
-    ExceedLauchLimit("ExceedLauchLimit"),
-    Success("Success"),
-    UnknownFail("UnknownFail");
+    WaitingToLaunch("WaitingToLaunch"), ExceedLauchLimit("ExceedLauchLimit"), Success(
+        "Success"), UnknownFail("UnknownFail");
 
     private final String name;
+
     private LaunchItemResultStatus(String name) {
       this.name = name;
     }
-    
+
     public String toString() {
       return this.name;
     }

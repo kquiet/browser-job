@@ -2,11 +2,28 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="crawler">
-    <insert id="CreateCase" parameterType="java.util.Map" statementType="PREPARED">
+  <select id="GetBotConfig" parameterType="java.util.Map"
+    resultType="java.util.Map" useCache="false" statementType="PREPARED">
     <![CDATA[
-        INSERT into house(site, url, imageUrl, description, price, createuser, createdate)
-        SELECT * FROM (SELECT '591', #{url}, #{imageUrl}, #{description}, #{price}, #{createUser}, utc_timestamp()) AS temp
-        WHERE NOT EXISTS(SELECT 1 FROM house WHERE url=#{url})
+      SELECT `key`,`value`
+      FROM botconfig
+      WHERE botname=#{botName}
     ]]>
-    </insert>
+  </select>
+  <insert id="AddRentHouse" parameterType="java.util.Map"
+    statementType="PREPARED">
+    <![CDATA[
+      INSERT into rent_house(site, url, imageUrl, description, price, createuser, createdate)
+      SELECT * FROM (SELECT '591', #{url}, #{imageUrl}, #{description}, #{price}, #{createUser}, utc_timestamp()) AS temp
+      WHERE NOT EXISTS(SELECT 1 FROM rent_house WHERE url=#{url})
+    ]]>
+  </insert>
+  <insert id="AddSaleHouse" parameterType="java.util.Map"
+    statementType="PREPARED">
+    <![CDATA[
+      INSERT into sale_house(site, url, imageUrl, description, price, createuser, createdate)
+      SELECT * FROM (SELECT '591', #{url}, #{imageUrl}, #{description}, #{price}, #{createUser}, utc_timestamp()) AS temp
+      WHERE NOT EXISTS(SELECT 1 FROM sale_house WHERE url=#{url})
+    ]]>
+  </insert>
 </mapper>

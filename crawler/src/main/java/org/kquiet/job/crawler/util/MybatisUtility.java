@@ -6,17 +6,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.List;
-
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
+/**
+ * MybatisUtility.
+ *
+ * @author monkey
+ *
+ */
 public class MybatisUtility {
 
   /**
    * Get mybatis session factory.
-   * 
+   *
    * @param mybatisFileName path of mybatis configuration file
    * @param mapperFileNameList list of mybatis mapper files
    * @param env environment
@@ -29,7 +34,7 @@ public class MybatisUtility {
       File baseDir = Paths.get("").toAbsolutePath().toFile();
       File mybatisFile = new File(baseDir, mybatisFileName);
 
-      //get config from directory first; otherwise get from classpath 
+      // get config from directory first; otherwise get from classpath
       if (mybatisFile.exists()) {
         try (InputStream inputStream = new FileInputStream(mybatisFile)) {
           sqlSessionFactory = initSqlSessionFactory(inputStream, env);
@@ -40,7 +45,7 @@ public class MybatisUtility {
         }
       }
 
-      for (String mapperFileName: mapperFileNameList) {
+      for (String mapperFileName : mapperFileNameList) {
         File mapperFile = new File(baseDir, mapperFileName);
         if (mapperFile.exists()) {
           try (InputStream inputStream = new FileInputStream(mapperFile)) {
@@ -68,11 +73,11 @@ public class MybatisUtility {
     }
   }
 
-  private static void initMapper(InputStream inputStream,
-      String mapperFilePath, SqlSessionFactory sqlSessionFactory) {
-    XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream,
-        sqlSessionFactory.getConfiguration(), mapperFilePath,
-        sqlSessionFactory.getConfiguration().getSqlFragments());
+  private static void initMapper(InputStream inputStream, String mapperFilePath,
+      SqlSessionFactory sqlSessionFactory) {
+    XMLMapperBuilder mapperParser =
+        new XMLMapperBuilder(inputStream, sqlSessionFactory.getConfiguration(), mapperFilePath,
+            sqlSessionFactory.getConfiguration().getSqlFragments());
     mapperParser.parse();
   }
 }
