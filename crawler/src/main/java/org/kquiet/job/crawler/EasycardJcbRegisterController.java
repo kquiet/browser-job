@@ -13,6 +13,7 @@ import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.jobscheduler.JobBase;
 import org.kquiet.jobscheduler.JobController.InteractionType;
+import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.Logger;
@@ -27,8 +28,8 @@ import org.slf4j.LoggerFactory;
 public class EasycardJcbRegisterController extends JobBase {
   private static final Logger logger = LoggerFactory.getLogger(EasycardJcbRegisterController.class);
 
-  public EasycardJcbRegisterController(String jobName) {
-    super(jobName);
+  public EasycardJcbRegisterController(JobConfig config) {
+    super(config);
   }
 
   @Override
@@ -189,7 +190,7 @@ public class EasycardJcbRegisterController extends JobBase {
               ac.skipToSuccess();
             }).endActionSequence().endIf().custom(ac -> {
               controller.awaitInteraction();
-              if (controller.getLatestInteraction() == InteractionType.Positive) {
+              if (controller.getLatestInteraction() == InteractionType.POSITIVE) {
                 this.setResultStatus(ResultStatus.Submitted);
                 submitted.add(card.toString());
                 ac.skipToSuccess();

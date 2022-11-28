@@ -1,0 +1,141 @@
+spring:
+  application:
+    name: job-scheduler
+  security:
+    user:
+      name: user
+server:
+  port: 26026
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: '/actuator'
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: when-authorized
+    env:
+      show-values: when-authorized
+    configprops:
+      show-values: when-authorized
+    shutdown:
+      enabled: false
+
+job-scheduler:
+  instanceName: Crawler
+  gui:
+    enable: false
+    clearLogInterval: 86400
+  browser:
+    type: firefox
+    maxTask: 1
+    pageLoadStrategy: none
+    headless: true
+  jobParallelism: 1
+  jobs:
+  - name: Sale591A
+    enable: true
+    impl: org.kquiet.job.crawler.Sale591Controller
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1800
+    scheduleAfterExec: true
+    parameters:
+      botName: "Sale591A"
+  - name: Rent591A
+    enable: false
+    impl: org.kquiet.job.crawler.Rent591Controller
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1800
+    scheduleAfterExec: true
+    parameters:
+      botName: "Rent591A"
+  - name: Rent591A
+    enable: false
+    impl: org.kquiet.job.crawler.Rent591Controller
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1800
+    scheduleAfterExec: true
+    parameters:
+      botName: "Rent591A"
+  - name: Rent591B
+    enable: false
+    impl: org.kquiet.job.crawler.Rent591Controller
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1800
+    scheduleAfterExec: true
+    parameters:
+      botName: "Rent591B"
+  - name: CheckExistPC24Switch
+    enable: false
+    impl: org.kquiet.job.crawler.CheckExistController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 30
+    scheduleAfterExec: true
+    parameters:
+      botName: "CheckExistPC24Switch"
+  - name: CheckExistMoMoSwitch
+    enable: false
+    impl: org.kquiet.job.crawler.CheckExistController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 30
+    scheduleAfterExec: true
+    parameters:
+      botName: "CheckExistMoMoSwitch"
+  - name: Pchome24hBuy
+    enable: false
+    impl: org.kquiet.job.crawler.Pchome24hBuyController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1
+    scheduleAfterExec: true
+    parameters:
+      botName: "Pchome24hBuy"
+      loginAcc: "${crawler.pchome24h.loginAccount}"
+      loginPwd: "${crawler.pchome24h.loginPassword}"
+  - name: EasycardJcbRegister
+    enable: false
+    impl: org.kquiet.job.crawler.EasycardJcbRegisterController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1
+    scheduleAfterExec: true
+    parameters:
+      autoSubmit: "false"
+      parallelism: "5"
+      creditcard: "XXXX"
+      easycard: "XXXX"
+  - name: RailwayBook
+    enable: false
+    impl: org.kquiet.job.crawler.RailwayBookController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 1
+    scheduleAfterExec: true
+    parameters:
+      autoSubmit: "false"
+      orderCount: "2"
+      pid: "XXXX"
+      fromStation_1: "1000"
+      toStation_1: "7000"
+      atDate_1: "2020/06/18"
+      trainNo1_1: "412"
+      trainNo2_1: "278"
+      trainNo3_1: "280"
+      quantity_1: "2"
+      changeSeat_1: "true"
+      fromStation_2: "7000"
+      toStation_2: "1000"
+      atDate_2: "2020/06/20"
+      trainNo1_2: "421"
+      trainNo2_2: "225"
+      trainNo3_2: "425"
+      quantity_2: "2"
+      changeSeat_2: "true"

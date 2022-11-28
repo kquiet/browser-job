@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -25,8 +26,8 @@ import org.slf4j.LoggerFactory;
 public class LaunchItem extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(LaunchItem.class);
 
-  public LaunchItem(String jobName) {
-    super(jobName);
+  public LaunchItem(JobConfig config) {
+    super(config);
   }
 
   @Override
@@ -92,7 +93,7 @@ public class LaunchItem extends JobBase {
                     // wait for a moment to make sure previous click's script is processed
                     Thread.sleep(3000);
                   } catch (Exception ex) {
-                    // TODO
+                    LOGGER.warn("Waiting logout exception!", ex);
                   }
                 }
               }

@@ -43,7 +43,7 @@
     <immediateFlush>true</immediateFlush>
     <encoder>
       <charset>UTF-8</charset>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] => %msg%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%logger] => %msg%n</pattern>
     </encoder>
   </appender>
 
@@ -65,7 +65,7 @@
     <immediateFlush>true</immediateFlush>
     <encoder>
       <charset>UTF-8</charset>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] => %msg%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%logger] => %msg%n</pattern>
     </encoder>
   </appender>
 
@@ -136,13 +136,13 @@
   </appender>
 
   <appender name="jTextAreaError"
-    class="org.kquiet.jobscheduler.util.JTextAreaLogAppender">
+    class="org.kquiet.jobscheduler.util.JtextAreaLogAppender">
     <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
       <level>WARN</level>
     </filter>
     <encoder>
       <charset>UTF-8</charset>
-      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] => %msg%n</pattern>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%logger] => %msg%n</pattern>
     </encoder>
   </appender>
 
@@ -152,7 +152,7 @@
   </appender>
 
   <appender name="jTextAreaInfo"
-    class="org.kquiet.jobscheduler.util.JTextAreaLogAppender">
+    class="org.kquiet.jobscheduler.util.JtextAreaLogAppender">
     <filter class="ch.qos.logback.classic.filter.LevelFilter">
       <level>INFO</level>
       <onMatch>NEUTRAL</onMatch>
@@ -170,7 +170,7 @@
   </appender>
 
   <appender name="jTextAreaDebug"
-    class="org.kquiet.jobscheduler.util.JTextAreaLogAppender">
+    class="org.kquiet.jobscheduler.util.JtextAreaLogAppender">
     <filter class="org.kquiet.jobscheduler.util.UpperBoundFilter">
       <level>DEBUG</level>
     </filter>
@@ -205,8 +205,13 @@
   <logger
     name="org.apache.ibatis.transaction.jdbc.JdbcTransaction"
     level="WARN" />
-  <logger name="io" additivity="false" />
+  <logger name="org.springframework" level="info" />
+  
+  <logger name="org.asynchttpclient.netty" level="info" />
+    
+  <logger name="org.apache.http" level="info" />
+  
+  <logger name="io.netty" level="info" />
 
-  <shutdownHook
-    class="ch.qos.logback.core.hook.DelayingShutdownHook" />
+  <shutdownHook />
 </configuration>

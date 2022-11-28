@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -22,8 +23,8 @@ import org.slf4j.LoggerFactory;
 public class Rent591Controller extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Controller.class);
 
-  public Rent591Controller(String jobName) {
-    super(jobName);
+  public Rent591Controller(JobConfig config) {
+    super(config);
   }
 
   @Override

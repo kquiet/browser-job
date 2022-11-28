@@ -35,6 +35,7 @@ nb-configuration.xml
 .pmdruleset.xml
 .fbExcludeFilterFile
 .classpath
+.factorypath
 .project
 .settings/
 .vscode/

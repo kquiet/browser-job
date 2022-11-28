@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
@@ -24,8 +25,8 @@ import org.slf4j.LoggerFactory;
 public class LaunchItem extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(LaunchItem.class);
 
-  public LaunchItem(String jobName) {
-    super(jobName);
+  public LaunchItem(JobConfig config) {
+    super(config);
   }
 
   @Override
@@ -98,6 +99,7 @@ public class LaunchItem extends JobBase {
                         Thread.sleep(500);
                       } catch (Exception ex) {
                         // wait logout link to appear
+                        LOGGER.warn("Waiting link-to-appear exception!", ex);
                       }
                       new Actions(driver).moveToElement(driver.findElement(
                           By.xpath("//*[contains(@class,'account-header-dropdown__menu-item')"
@@ -107,6 +109,7 @@ public class LaunchItem extends JobBase {
                         Thread.sleep(3000);
                       } catch (Exception ex) {
                         // wait for a moment to make sure previous click's script is processed
+                        LOGGER.warn("Waiting logout exception!", ex);
                       }
                     }
                   }
@@ -213,9 +216,8 @@ public class LaunchItem extends JobBase {
                     + " input[type='file']\")[0].style.top='20%';");
           }).justWait(1000)
           .upload(By.xpath("//*[contains(@class,'shopee-dropzone')]/input[@type='file']"),
-              "D:\\work\\daigobang\\i-img431x500-1534817987mrfqju40027.jpg",
-              "D:\\work\\daigobang\\i-img500x280-1534817987exbsh940027.jpg",
-              "D:\\work\\daigobang\\i-img500x281-1534817987paizzo40027.jpg")
+              "//PATH/TO/UPLOAD/image1.jpg", "//PATH/TO/UPLOAD/image2.jpg",
+              "//PATH/TO/UPLOAD/image3.jpg")
           .waitUntil(ExpectedConditions.numberOfElementsToBe(
               By.xpath("//*[contains(concat(' ', @class, ' '), ' image-manager ')]//"
                   + "li[starts-with(@data-item,'data:image')]"),

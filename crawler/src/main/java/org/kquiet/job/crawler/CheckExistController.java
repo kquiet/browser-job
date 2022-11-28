@@ -7,6 +7,7 @@ import java.util.Map;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
@@ -23,8 +24,8 @@ import org.slf4j.LoggerFactory;
 public class CheckExistController extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(CheckExistController.class);
 
-  public CheckExistController(String jobName) {
-    super(jobName);
+  public CheckExistController(JobConfig config) {
+    super(config);
   }
 
   @Override

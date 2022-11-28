@@ -11,26 +11,69 @@
   <packaging>jar</packaging>
 
   <properties>
-    <jobscheduler.version>1.0.1</jobscheduler.version>
+    <maven.compiler.release>17</maven.compiler.release>
+    <slf4j.version>2.0.4</slf4j.version>
+    <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
+    <mybatis.version>3.5.11</mybatis.version>
+    <fasterxml.jackson.version>2.14.1</fasterxml.jackson.version>
+    <selenium.version>4.6.0</selenium.version>
+    <jobscheduler.version>2.0.0</jobscheduler.version>
+    <auto-browser.version>2.0.2</auto-browser.version>
+    <spring.boot.version>3.0.0</spring.boot.version>
+    
+    <mysql-connector-java.version>8.0.30</mysql-connector-java.version>
+    <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
+    
+    <junit-jupiter.version>5.9.1</junit-jupiter.version>
   </properties>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>fluent-hc</artifactId>
-      <version>4.5.13</version>
+      <version>${apache.httpcomponents.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpmime</artifactId>
-      <version>4.5.13</version>
+      <version>${apache.httpcomponents.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.mybatis</groupId>
       <artifactId>mybatis</artifactId>
-      <version>3.5.11</version>
+      <version>${mybatis.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${fasterxml.jackson.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${fasterxml.jackson.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-api</artifactId>
+      <version>${selenium.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.seleniumhq.selenium</groupId>
+      <artifactId>selenium-support</artifactId>
+      <version>${selenium.version}</version>
     </dependency>
 
     <dependency>
@@ -38,30 +81,44 @@
       <artifactId>job-scheduler</artifactId>
       <version>${jobscheduler.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>org.kquiet</groupId>
+      <artifactId>auto-browser</artifactId>
+      <version>${auto-browser.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>mysql</groupId>
       <artifactId>mysql-connector-java</artifactId>
-      <version>8.0.30</version>
+      <version>${mysql-connector-java.version}</version>
       <scope>runtime</scope>
     </dependency>
 
     <dependency>
       <groupId>net.logstash.logback</groupId>
       <artifactId>logstash-logback-encoder</artifactId>
-      <version>7.2</version>
+      <version>${logstash-logback-encoder.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>${spring.boot.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>5.9.1</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.9.1</version>
+      <version>${junit-jupiter.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -78,7 +135,7 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.xml</include>
-          <include>**/*.config</include>
+          <include>**/*.yml</include>
         </includes>
       </resource>
     </resources>
@@ -88,11 +145,19 @@
         <filtering>true</filtering>
         <includes>
           <include>**/*.xml</include>
-          <include>**/*.config</include>
+          <include>**/*.yml</include>
         </includes>
       </testResource>
     </testResources>
     <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring.boot.version}</version>
+        <configuration>
+          <mainClass>${project.groupId}.jobscheduler.Launcher</mainClass>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
         <executions>
@@ -126,7 +191,7 @@
                   <filtering>true</filtering>
                   <includes>
                     <include>**/*.xml</include>
-                    <include>**/*.config</include>
+                    <include>**/*.yml</include>
                   </includes>
                 </resource>
               </resources>
@@ -151,7 +216,7 @@
                     <include>Dockerfile</include>
                     <include>**/*.sh</include>
                     <include>**/*.xml</include>
-                    <include>**/*.config</include>
+                    <include>**/*.yml</include>
                   </includes>
                 </resource>
               </resources>
@@ -191,7 +256,7 @@
           </archive>
           <excludes>
             <exclude>logback.xml</exclude>
-            <exclude>jobscheduler.config</exclude>
+            <exclude>application.yml</exclude>
             <exclude>mybatis-config.xml</exclude>
             <exclude>mybatis-mapper.xml</exclude>
           </excludes>

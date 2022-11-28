@@ -9,6 +9,7 @@ import java.util.Set;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
 import org.openqa.selenium.By;
 import org.openqa.selenium.ElementClickInterceptedException;
 import org.openqa.selenium.OutputType;
@@ -26,8 +27,8 @@ import org.slf4j.LoggerFactory;
 public class Pchome24hBuyController extends JobBase {
   private static final Logger logger = LoggerFactory.getLogger(Pchome24hBuyController.class);
 
-  public Pchome24hBuyController(String jobName) {
-    super(jobName);
+  public Pchome24hBuyController(JobConfig config) {
+    super(config);
   }
 
   @Override

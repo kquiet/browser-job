@@ -3,9 +3,6 @@ package org.kquiet.job.crawler.test;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
@@ -13,8 +10,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.job.crawler.test.vanilla.VanillaJob;
+import org.kquiet.jobscheduler.BeanConfiguration;
 import org.kquiet.jobscheduler.JobController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * VanillaTest.
@@ -22,9 +23,11 @@ import org.kquiet.jobscheduler.JobController;
  * @author monkey
  *
  */
+@SpringBootTest(classes = {BeanConfiguration.class})
+@EnableConfigurationProperties
 public class VanillaTest {
-  private CountDownLatch latch = null;
-  private final List<String> parameterValueList = new ArrayList<>();
+  @Autowired
+  private JobController controller;
 
   @BeforeAll
   public static void setUpClass() {}
@@ -34,7 +37,7 @@ public class VanillaTest {
 
   @BeforeEach
   public void setUp() {
-    latch = new CountDownLatch(2);
+    VanillaJob.latch = new CountDownLatch(2);
   }
 
   @AfterEach
@@ -42,40 +45,19 @@ public class VanillaTest {
 
   @Test
   public void controllerTest() {
-    JobController controller = new JobController();
-    TestJobBase job1 = new TestJobBase("VanillaTest1");
-    TestJobBase job2 = new TestJobBase("VanillaTest2");
-    job1.setJobController(controller);
-    job2.setJobController(controller);
-    controller.start(Arrays.asList(job2, job1));
+
+    controller.start();
     try {
-      latch.await(30, TimeUnit.SECONDS);
+      VanillaJob.latch.await(5, TimeUnit.SECONDS);
     } catch (Exception ex) {
       System.err.println(ex.toString());
     }
-    // try{Thread.sleep(3600000);}catch(Exception x) {}
+
     controller.stop();
     assertAll(
-        () -> assertEquals("CrawlerTest", job1.getInstanceName(), "Wrong instance name on job1"),
-        () -> assertEquals("CrawlerTest", job2.getInstanceName(), "Wrong instance name on job2"),
-        () -> assertEquals(2, parameterValueList.size(), "Wrong parameter value size"),
-        () -> assertEquals("VanillaTest2,VanillaTest1", String.join(",", parameterValueList),
-            "Wrong parameter value sequence"));
+        () -> assertEquals(2, VanillaJob.parameterValueList.size(), "Wrong parameter value size"),
+        () -> assertEquals("VanillaTest1,VanillaTest2",
+            String.join(",", VanillaJob.parameterValueList), "Wrong parameter value sequence"));
   }
 
-  class TestJobBase extends JobBase {
-    private String parameterValue = null;
-
-
-    public TestJobBase(String jobName) {
-      super(jobName);
-    }
-
-    @Override
-    public void run() {
-      parameterValue = this.getParameter("testParameter");
-      parameterValueList.add(parameterValue);
-      latch.countDown();
-    }
-  }
 }

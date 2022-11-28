@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: job-scheduler
+  security:
+    user:
+      name: user
+server:
+  port: 26026
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: '/actuator'
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: when-authorized
+    env:
+      show-values: when-authorized
+    configprops:
+      show-values: when-authorized
+    shutdown:
+      enabled: false
+
+job-scheduler:
+  instanceName: CrawlerTest
+  gui:
+    enable: true
+    clearLogInterval: 86400
+  jobParallelism: 1
+  jobs:
+  - name: VanillaTest1
+    enable: true
+    impl: org.kquiet.job.crawler.test.vanilla.VanillaJob
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 10
+    scheduleAfterExec: true
+    parameters:
+      testParameter: "VanillaTest1"
+  - name: VanillaTest2
+    enable: true
+    impl: org.kquiet.job.crawler.test.vanilla.VanillaJob
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 10
+    scheduleAfterExec: true
+    parameters:
+      testParameter: "VanillaTest2"
+  - name: RutenLaunchItem
+    enable: false
+    impl: org.kquiet.job.crawler.test.ruten.LaunchItem
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 60
+    scheduleAfterExec: true
+    parameters:
+      account: ""
+      password: ""
+  - name: ShopeeLaunchItem
+    enable: false
+    impl: org.kquiet.job.crawler.test.shopee.LaunchItem
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 60
+    scheduleAfterExec: true
+    parameters:
+      account: ""
+      password: ""
