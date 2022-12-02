@@ -32,4 +32,4 @@ _EOF_
   sleep 10s
 fi
 
-exec java -Dchrome_sandbox=no -cp "lib/:lib/*:ext/:ext/*" org.kquiet.jobscheduler.Launcher
+exec java -Dchrome_sandbox=no -cp "lib/:lib/*:ext/:ext/*" org.kquiet.browserscheduler.Launcher

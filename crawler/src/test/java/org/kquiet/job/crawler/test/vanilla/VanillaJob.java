@@ -3,8 +3,8 @@ package org.kquiet.job.crawler.test.vanilla;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import org.kquiet.jobscheduler.JobBase;
-import org.kquiet.jobscheduler.JobSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
 
 /**
  * TestJobBase.

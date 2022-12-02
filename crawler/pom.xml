@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.kquiet</groupId>
-    <artifactId>job-parent</artifactId>
+    <artifactId>browser-job</artifactId>
     <version>1.0.0</version>
   </parent>
-  <artifactId>job-crawler</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <artifactId>crawler</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -17,7 +17,7 @@
     <mybatis.version>3.5.11</mybatis.version>
     <fasterxml.jackson.version>2.14.1</fasterxml.jackson.version>
     <selenium.version>4.6.0</selenium.version>
-    <jobscheduler.version>2.0.0</jobscheduler.version>
+    <browserscheduler.version>2.0.2</browserscheduler.version>
     <auto-browser.version>2.0.2</auto-browser.version>
     <spring.boot.version>3.0.0</spring.boot.version>
     
@@ -78,8 +78,8 @@
 
     <dependency>
       <groupId>org.kquiet</groupId>
-      <artifactId>job-scheduler</artifactId>
-      <version>${jobscheduler.version}</version>
+      <artifactId>browser-scheduler</artifactId>
+      <version>${browserscheduler.version}</version>
     </dependency>
     
     <dependency>
@@ -155,7 +155,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring.boot.version}</version>
         <configuration>
-          <mainClass>${project.groupId}.jobscheduler.Launcher</mainClass>
+          <mainClass>${project.groupId}.browserscheduler.Launcher</mainClass>
         </configuration>
       </plugin>
       <plugin>
@@ -244,7 +244,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>${project.groupId}.jobscheduler.Launcher</mainClass>
+              <mainClass>${project.groupId}.browserscheduler.Launcher</mainClass>
               <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
               <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>

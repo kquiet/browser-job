@@ -2,7 +2,7 @@ package org.kquiet.job.crawler;
 
 import java.io.File;
 import java.util.Map;
-import org.kquiet.jobscheduler.JobBase;
+import org.kquiet.browserscheduler.JobBase;
 
 /**
  * CommonBiz.

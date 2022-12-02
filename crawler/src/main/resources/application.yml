@@ -1,6 +1,6 @@
 spring:
   application:
-    name: job-scheduler
+    name: browser-scheduler
   security:
     user:
       name: user
@@ -23,7 +23,7 @@ management:
     shutdown:
       enabled: false
 
-job-scheduler:
+browser-scheduler:
   instanceName: Crawler
   gui:
     enable: false

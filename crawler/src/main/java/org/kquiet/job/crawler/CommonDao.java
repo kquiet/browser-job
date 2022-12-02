@@ -19,10 +19,10 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
+import org.kquiet.browserscheduler.JobBase;
 import org.kquiet.job.crawler.util.JacksonUtility;
 import org.kquiet.job.crawler.util.MybatisUtility;
 import org.kquiet.job.crawler.util.NetUtility;
-import org.kquiet.jobscheduler.JobBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

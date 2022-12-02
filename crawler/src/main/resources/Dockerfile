@@ -1,4 +1,4 @@
-FROM kquiet/job-scheduler:${jobscheduler.version}
+FROM kquiet/browser-scheduler:${browserscheduler.version}
 USER root:root
 RUN echo '@edgetesting http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /etc/apk/repositories \
  && apk update \
@@ -11,6 +11,6 @@ USER kquiet:kquiet
 
 COPY --chown=kquiet:kquiet ["application.yml", "mybatis-config.xml", "mybatis-mapper.xml", "logback.xml", "${project.build.finalName}.jar", "lib", "./ext/"]
 
-COPY --chown=kquiet:kquiet ["jobscheduler.sh", "./"]
+COPY --chown=kquiet:kquiet ["browserscheduler.sh", "./"]
 
-RUN chmod +x ./jobscheduler.sh
+RUN chmod +x ./browserscheduler.sh
