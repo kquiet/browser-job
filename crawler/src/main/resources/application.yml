@@ -34,10 +34,11 @@ browser-scheduler:
     pageLoadStrategy: none
     headless: true
   jobParallelism: 1
+  springComponentScanBasePackages: "org.kquiet.browserjob"
   jobs:
   - name: Sale591A
     enable: true
-    impl: org.kquiet.job.crawler.Sale591Controller
+    impl: org.kquiet.browserjob.crawler.Sale591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -46,7 +47,7 @@ browser-scheduler:
       botName: "Sale591A"
   - name: Rent591A
     enable: false
-    impl: org.kquiet.job.crawler.Rent591Controller
+    impl: org.kquiet.browserjob.crawler.Rent591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -55,7 +56,7 @@ browser-scheduler:
       botName: "Rent591A"
   - name: Rent591A
     enable: false
-    impl: org.kquiet.job.crawler.Rent591Controller
+    impl: org.kquiet.browserjob.crawler.Rent591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -64,7 +65,7 @@ browser-scheduler:
       botName: "Rent591A"
   - name: Rent591B
     enable: false
-    impl: org.kquiet.job.crawler.Rent591Controller
+    impl: org.kquiet.browserjob.crawler.Rent591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -73,7 +74,7 @@ browser-scheduler:
       botName: "Rent591B"
   - name: CheckExistPC24Switch
     enable: false
-    impl: org.kquiet.job.crawler.CheckExistController
+    impl: org.kquiet.browserjob.crawler.CheckExistController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 30
@@ -82,7 +83,7 @@ browser-scheduler:
       botName: "CheckExistPC24Switch"
   - name: CheckExistMoMoSwitch
     enable: false
-    impl: org.kquiet.job.crawler.CheckExistController
+    impl: org.kquiet.browserjob.crawler.CheckExistController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 30
@@ -91,7 +92,7 @@ browser-scheduler:
       botName: "CheckExistMoMoSwitch"
   - name: Pchome24hBuy
     enable: false
-    impl: org.kquiet.job.crawler.Pchome24hBuyController
+    impl: org.kquiet.browserjob.crawler.Pchome24hBuyController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1
@@ -102,7 +103,7 @@ browser-scheduler:
       loginPwd: "${crawler.pchome24h.loginPassword}"
   - name: EasycardJcbRegister
     enable: false
-    impl: org.kquiet.job.crawler.EasycardJcbRegisterController
+    impl: org.kquiet.browserjob.crawler.EasycardJcbRegisterController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1
@@ -114,7 +115,7 @@ browser-scheduler:
       easycard: "XXXX"
   - name: RailwayBook
     enable: false
-    impl: org.kquiet.job.crawler.RailwayBookController
+    impl: org.kquiet.browserjob.crawler.RailwayBookController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1

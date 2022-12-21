@@ -32,4 +32,4 @@ _EOF_
   sleep 10s
 fi
 
-exec java -Dchrome_sandbox=no -cp "lib/:lib/*:ext/:ext/*" org.kquiet.browserscheduler.Launcher
+exec java -javaagent:opentelemetry-javaagent.jar -Dotel.exporter.otlp.endpoint=${otlp_endpoint:-http://localhost:4317} -Dotel.service.name=${project.parent.artifactId}-${project.artifactId}-${project.version} -Dchrome_sandbox=no -cp "lib/:lib/*:ext/:ext/*" org.kquiet.browserscheduler.Launcher

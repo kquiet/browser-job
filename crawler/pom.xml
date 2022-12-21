@@ -4,30 +4,65 @@
   <parent>
     <groupId>org.kquiet</groupId>
     <artifactId>browser-job</artifactId>
-    <version>1.0.0</version>
+    <version>0.1.0</version>
   </parent>
   <artifactId>crawler</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
-    <slf4j.version>2.0.4</slf4j.version>
-    <apache.httpcomponents.version>4.5.13</apache.httpcomponents.version>
+
+    <opentelemetry.version>1.21.0</opentelemetry.version>
+    <opentelemetry.instrumentation.annotation.version>1.21.0</opentelemetry.instrumentation.annotation.version>
+    <slf4j.version>2.0.6</slf4j.version>
+    <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
     <mybatis.version>3.5.11</mybatis.version>
     <fasterxml.jackson.version>2.14.1</fasterxml.jackson.version>
-    <selenium.version>4.6.0</selenium.version>
-    <browserscheduler.version>2.0.2</browserscheduler.version>
-    <auto-browser.version>2.0.2</auto-browser.version>
+    <selenium.version>4.7.2</selenium.version>
+    <browserscheduler.version>2.0.3-SNAPSHOT</browserscheduler.version>
+    <auto-browser.version>2.0.3</auto-browser.version>
     <spring.boot.version>3.0.0</spring.boot.version>
-    
+
     <mysql-connector-java.version>8.0.30</mysql-connector-java.version>
     <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
-    
-    <junit-jupiter.version>5.9.1</junit-jupiter.version>
+
+    <junit.version>5.9.1</junit.version>
+    <mockito.version>4.10.0</mockito.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.opentelemetry</groupId>
+        <artifactId>opentelemetry-bom</artifactId>
+        <version>${opentelemetry.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
+    <dependency>
+      <groupId>io.opentelemetry</groupId>
+      <artifactId>opentelemetry-api</artifactId>
+    </dependency>
+    
+    <dependency>
+      <groupId>io.opentelemetry.instrumentation</groupId>
+      <artifactId>opentelemetry-instrumentation-annotations</artifactId>
+      <version>${opentelemetry.instrumentation.annotation.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>fluent-hc</artifactId>
@@ -51,25 +86,25 @@
       <artifactId>jackson-core</artifactId>
       <version>${fasterxml.jackson.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
       <version>${fasterxml.jackson.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>${slf4j.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-api</artifactId>
       <version>${selenium.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.seleniumhq.selenium</groupId>
       <artifactId>selenium-support</artifactId>
@@ -81,7 +116,7 @@
       <artifactId>browser-scheduler</artifactId>
       <version>${browserscheduler.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>org.kquiet</groupId>
       <artifactId>auto-browser</artifactId>
@@ -101,7 +136,7 @@
       <version>${logstash-logback-encoder.version}</version>
       <scope>runtime</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -111,14 +146,21 @@
 
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit-jupiter.version}</version>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
+    
     <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>${junit-jupiter.version}</version>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
@@ -289,9 +331,36 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <includes>
+            <include>**/*Test.java</include>
+          </includes>
+          <excludes>
+            <exclude>**/*IntegrationTest.java</exclude>
+          </excludes>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <includes>
+            <include>**/*IntegrationTest.java</include>
+          </includes>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
-  
+
   <developers>
     <developer>
       <name>Kimberly</name>
@@ -300,7 +369,7 @@
       <organizationUrl>https://github.com/kquiet</organizationUrl>
     </developer>
   </developers>
-  
+
   <scm>
     <connection>scm:git:https://github.com/kquiet/job.git</connection>
     <developerConnection>scm:git:https://github.com/kquiet/job.git</developerConnection>

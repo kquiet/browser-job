@@ -29,10 +29,11 @@ browser-scheduler:
     enable: true
     clearLogInterval: 86400
   jobParallelism: 1
+  springComponentScanBasePackages: ""
   jobs:
   - name: VanillaTest1
     enable: true
-    impl: org.kquiet.job.crawler.test.vanilla.VanillaJob
+    impl: org.kquiet.browserjob.crawler.vanilla.VanillaJob
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 10
@@ -41,7 +42,7 @@ browser-scheduler:
       testParameter: "VanillaTest1"
   - name: VanillaTest2
     enable: true
-    impl: org.kquiet.job.crawler.test.vanilla.VanillaJob
+    impl: org.kquiet.browserjob.crawler.vanilla.VanillaJob
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 10
@@ -50,7 +51,7 @@ browser-scheduler:
       testParameter: "VanillaTest2"
   - name: RutenLaunchItem
     enable: false
-    impl: org.kquiet.job.crawler.test.ruten.LaunchItem
+    impl: org.kquiet.browserjob.crawler.ruten.LaunchItem
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 60
@@ -60,7 +61,7 @@ browser-scheduler:
       password: ""
   - name: ShopeeLaunchItem
     enable: false
-    impl: org.kquiet.job.crawler.test.shopee.LaunchItem
+    impl: org.kquiet.browserjob.crawler.shopee.LaunchItem
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 60

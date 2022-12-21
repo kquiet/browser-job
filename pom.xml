@@ -3,9 +3,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.kquiet</groupId>
   <artifactId>browser-job</artifactId>
-  <version>1.0.0</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
-  <description>This is the parent project of all jobs.</description>
+  <description>This is the parent project of all browser job.</description>
   <modules>
     <module>crawler</module>
   </modules>
@@ -87,6 +87,10 @@
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
+          <version>3.0.0-M7</version>
+        </plugin>
+        <plugin>
+          <artifactId>maven-failsafe-plugin</artifactId>
           <version>3.0.0-M7</version>
         </plugin>
         <plugin>
