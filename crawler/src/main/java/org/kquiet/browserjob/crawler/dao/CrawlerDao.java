@@ -1,15 +1,12 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.dao;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Consumer;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -19,96 +16,38 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
 import org.kquiet.browserjob.crawler.util.DoubleSerializer;
 import org.kquiet.browserjob.crawler.util.FloatSerializer;
-import org.kquiet.browserjob.crawler.util.MybatisHelper;
 import org.kquiet.browserjob.crawler.util.NetHelper;
 import org.kquiet.browserjob.crawler.util.SqlTimestampSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-class CommonDao {
-  private static final Logger LOGGER = LoggerFactory.getLogger(CommonDao.class);
-  private static final String MYBATIS_FILE_NAME = "mybatis-config.xml";
-  private static final String MAPPER_FILE_NAME = "mybatis-mapper.xml";
+/**
+ * crawler dao.
+ *
+ * @author monkey
+ *
+ */
+@Component
+public class CrawlerDao {
+  private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerDao.class);
   private static final String TELEGRAM_URL_SEND_PHOTO = "https://api.telegram.org/bot%s/sendPhoto";
 
-  private MybatisHelper mybatisHelper = new MybatisHelper();
   private NetHelper netHelper = new NetHelper();
-  private SqlSessionFactory sqlSessionFactory = mybatisHelper.getSessionFactory(MYBATIS_FILE_NAME,
-      Arrays.asList(MAPPER_FILE_NAME), "crawler");
   private ObjectMapper objectMapper = getDefaultMapperForJson();
 
-  Map<String, String> getBotConfig(String botName) {
-    Map<String, String> result = new HashMap<>();
-    try (SqlSession session = sqlSessionFactory.openSession()) {
-      Map<String, Object> param = new HashMap<>();
-      param.put("botName", botName);
-      List<Map<String, String>> queryResult =
-          session.<Map<String, String>>selectList("GetBotConfig", param);
-      if (queryResult != null) {
-        for (Map<String, String> row : queryResult) {
-          result.put(row.get("key"), row.get("value"));
-        }
-      }
-      return result;
-    } catch (Exception ex) {
-      LOGGER.error("getBotConfig error!", ex);
-      return null;
-    }
-  }
-
-  int addRentHouse(String url, String imageUrl, String description, String price,
-      String maintainer) {
-    try {
-      try (SqlSession session = sqlSessionFactory.openSession(true)) {
-        url = Optional.ofNullable(url).orElse("");
-        imageUrl = Optional.ofNullable(imageUrl).orElse("");
-        description = Optional.ofNullable(description).orElse("");
-        price = Optional.ofNullable(price).orElse("");
-
-        Map<String, Object> param = new HashMap<>();
-        param.put("url", url);
-        param.put("imageUrl", imageUrl);
-        param.put("description", description);
-        param.put("price", price);
-        param.put("createUser", maintainer);
-        int result = session.insert("AddRentHouse", param);
-        return result;
-      }
-    } catch (Exception ex) {
-      LOGGER.error("addRentHouse error!", ex);
-      return -1;
-    }
-  }
-
-  int addSaleHouse(String url, String imageUrl, String description, String price,
-      String maintainer) {
-    try {
-      try (SqlSession session = sqlSessionFactory.openSession(true)) {
-        url = Optional.ofNullable(url).orElse("");
-        imageUrl = Optional.ofNullable(imageUrl).orElse("");
-        description = Optional.ofNullable(description).orElse("");
-        price = Optional.ofNullable(price).orElse("");
-
-        Map<String, Object> param = new HashMap<>();
-        param.put("url", url);
-        param.put("imageUrl", imageUrl);
-        param.put("description", description);
-        param.put("price", price);
-        param.put("createUser", maintainer);
-        int result = session.insert("AddSaleHouse", param);
-        return result;
-      }
-    } catch (Exception ex) {
-      LOGGER.error("addSaleHouse error!", ex);
-      return -1;
-    }
-  }
-
-  boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {
+  /**
+   * notify through telegram sendPhoto api.
+   *
+   * @param token telegram bot token
+   * @param chatId telegram chat id
+   * @param imageUrl image url
+   * @param caption image caption
+   * @return api result
+   */
+  public boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {
     String apiUrl = String.format(TELEGRAM_URL_SEND_PHOTO, token);
     Map<String, Object> jsonBodyParam = new HashMap<>();
     jsonBodyParam.put("chat_id", chatId);
@@ -124,7 +63,16 @@ class CommonDao {
     }
   }
 
-  boolean notifyTelegram(String token, String chatId, File photo, String caption) {
+  /**
+   * notify through telegram sendPhoto api.
+   *
+   * @param token telegram bot token
+   * @param chatId telegram chat id
+   * @param photo image file
+   * @param caption image caption
+   * @return api result
+   */
+  public boolean notifyTelegram(String token, String chatId, File photo, String caption) {
     String apiUrl = String.format(TELEGRAM_URL_SEND_PHOTO, token);
     HttpEntity entity =
         MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)

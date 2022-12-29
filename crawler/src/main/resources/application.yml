@@ -1,6 +1,9 @@
 spring:
   application:
     name: browser-scheduler
+  jpa:
+    hibernate:
+      ddl-auto: none
   security:
     user:
       name: user
@@ -24,6 +27,11 @@ management:
       enabled: false
 
 browser-scheduler:
+  dataSource:
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    jdbcUrl: "jdbc:mysql://${crawler.mysqlIp}:${crawler.mysqlPort}/${crawler.mysqlDb}?useUnicode=yes&characterEncoding=UTF-8&connectTimeout=10000&socketTimeout=10000"
+    username: "${crawler.mysqlUserName}"
+    password: "${crawler.mysqlPassword}"
   instanceName: Crawler
   gui:
     enable: false
@@ -38,7 +46,7 @@ browser-scheduler:
   jobs:
   - name: Sale591A
     enable: true
-    impl: org.kquiet.browserjob.crawler.Sale591Controller
+    impl: org.kquiet.browserjob.crawler.house591.Sale591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -47,7 +55,7 @@ browser-scheduler:
       botName: "Sale591A"
   - name: Rent591A
     enable: false
-    impl: org.kquiet.browserjob.crawler.Rent591Controller
+    impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -56,7 +64,7 @@ browser-scheduler:
       botName: "Rent591A"
   - name: Rent591A
     enable: false
-    impl: org.kquiet.browserjob.crawler.Rent591Controller
+    impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800
@@ -65,7 +73,7 @@ browser-scheduler:
       botName: "Rent591A"
   - name: Rent591B
     enable: false
-    impl: org.kquiet.browserjob.crawler.Rent591Controller
+    impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1800

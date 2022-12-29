@@ -9,7 +9,7 @@ RUN echo '@edgetesting http://dl-cdn.alpinelinux.org/alpine/edge/testing' >> /et
 
 USER kquiet:kquiet
 
-COPY --chown=kquiet:kquiet ["application.yml", "mybatis-config.xml", "mybatis-mapper.xml", "logback.xml", "${project.build.finalName}.jar", "lib", "./ext/"]
+COPY --chown=kquiet:kquiet ["application.yml", "logback.xml", "${project.build.finalName}.jar", "lib", "./ext/"]
 
 COPY --chown=kquiet:kquiet ["browserscheduler.sh", "./"]
 

@@ -62,10 +62,10 @@ public class Pchome24hBuyController extends JobBase {
 
     private void config(JobBase job) {
       try {
-        CommonBiz bizObj = SpringBeanConfiguration.getAppContext()
-            .getBean(SpringBeanConfiguration.class).commonBiz();
+        CrawlerService crawlerService =
+            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);
         String botName = job.getParameter("botName");
-        Map<String, String> configMap = bizObj.getBotConfig(botName);
+        Map<String, String> configMap = crawlerService.getBotConfig(botName);
         String trackUrl = configMap.get("trackUrl");
         String itemId = configMap.get("itemId");
         String chatId = configMap.get("chatId");
@@ -165,7 +165,7 @@ public class Pchome24hBuyController extends JobBase {
                 if (!"".equals(chatId)) {
                   File screenshot =
                       ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);
-                  bizObj.notifyTelegram(chatToken, chatId, screenshot, itemId);
+                  crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);
                 }
               }
 
@@ -182,7 +182,7 @@ public class Pchome24hBuyController extends JobBase {
               if (!"".equals(chatId)) {
                 File screenshot =
                     ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);
-                bizObj.notifyTelegram(chatToken, chatId, screenshot, itemId);
+                crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);
               }
               LOGGER.info("{} succeed({}): {}", getName(), this.getResultStatus(),
                   this.getMessage());

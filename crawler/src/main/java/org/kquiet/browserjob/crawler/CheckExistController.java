@@ -58,10 +58,10 @@ public class CheckExistController extends JobBase {
 
     private void config(JobBase job) {
       try {
-        CommonBiz bizObj = SpringBeanConfiguration.getAppContext()
-            .getBean(SpringBeanConfiguration.class).commonBiz();
+        CrawlerService crawlerService =
+            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);
         String botName = job.getParameter("botName");
-        Map<String, String> configMap = bizObj.getBotConfig(botName);
+        Map<String, String> configMap = crawlerService.getBotConfig(botName);
         String checkUrl = configMap.get("checkUrl");
         String existPattern = configMap.get("existPattern");
         int timeout = Integer.parseInt(configMap.get("checkTimeout"));
@@ -80,7 +80,7 @@ public class CheckExistController extends JobBase {
 
               // notify
               if (!"".equals(chatId)) {
-                bizObj.notifyTelegram(chatToken, chatId, screenshot, checkUrl);
+                crawlerService.notifyTelegram(chatToken, chatId, screenshot, checkUrl);
               }
             }).returnToComposerBuilder().onFail(ac -> {
               if (this.getMessage() == null || "".equals(this.getMessage())) {

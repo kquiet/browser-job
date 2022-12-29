@@ -198,13 +198,15 @@
     <appender-ref ref="asyncJTextAreaInfo" />
     <appender-ref ref="asyncJTextAreaDebug" />
   </root>
-
-  <logger
-    name="org.apache.ibatis.datasource.pooled.PooledDataSource"
-    level="WARN" />
-  <logger
-    name="org.apache.ibatis.transaction.jdbc.JdbcTransaction"
-    level="WARN" />
+  
+  <logger name="org.hibernate.SQL" level="debug" />
+  
+  <logger name="org.hibernate.orm.results" level="debug" />
+  
+  <logger name="org.hibernate" level="info" />
+  
+  <logger name="com.zaxxer.hikari" level="info" />
+  
   <logger name="org.springframework" level="info" />
   
   <logger name="org.asynchttpclient.netty" level="info" />

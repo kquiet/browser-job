@@ -1,15 +1,19 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.house591;
 
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.metrics.LongCounter;
 import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserjob.crawler.house591.entity.SaleHouse;
 import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
 import org.kquiet.browserscheduler.JobBase;
 import org.openqa.selenium.By;
@@ -26,7 +30,7 @@ import org.slf4j.LoggerFactory;
  */
 public class Sale591Controller extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(Sale591Controller.class);
-  private static final Meter meter = SpringBeanConfiguration.getAppContext()
+  private static final Meter meter = CrawlerBeanConfiguration.getAppContext()
       .getBean(OpenTelemetry.class).getMeter(Sale591Controller.class.getCanonicalName());
   private static final LongCounter instrumentTelegramSendPhoto =
       meter.counterBuilder("telegram_sendPhoto")
@@ -70,10 +74,10 @@ public class Sale591Controller extends JobBase {
 
     private void config(JobBase job) {
       try {
-        CommonBiz bizObj = SpringBeanConfiguration.getAppContext()
-            .getBean(SpringBeanConfiguration.class).commonBiz();
+        CrawlerService crawlerService =
+            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);
         String botName = job.getParameter("botName");
-        Map<String, String> configMap = bizObj.getBotConfig(botName);
+        Map<String, String> configMap = crawlerService.getBotConfig(botName);
         String entryUrl = configMap.get("entryUrl");
         String chatId = configMap.get("chatId");
         String chatToken = configMap.get("chatToken");
@@ -142,24 +146,21 @@ public class Sale591Controller extends JobBase {
                       .collect(Collectors.joining(" ")) + " " + unitPriceE.getText().trim();
 
                   // save for each property
-                  int addResult = bizObj.addSaleHouse(url, imageUrl, description, price, botName);
-                  switch (addResult) {
-                    case 1:
-                      LOGGER.info(String.format("SaleHouse:%s added", url));
-                      instrumentNewSaleHouse.add(1L);
-                      if (!"".equals(chatId) && bizObj.notifyTelegram(chatToken, chatId, imageUrl,
-                          String.format("%s %s %s", url, description, price))) {
-                        instrumentTelegramSendPhoto.add(1L);
+                  House591Service house591Service =
+                      CrawlerBeanConfiguration.getAppContext().getBean(House591Service.class);
+                  SaleHouse toAdd = newSaleHouse(url, imageUrl, description, price, botName);
+                  boolean isExist = house591Service.existsSaleHouse(toAdd.getUrl());
+                  if (!isExist) {
+                    house591Service.addSaleHouse(toAdd);
+                    LOGGER.info(String.format("SaleHouse:%s added", url));
+                    instrumentNewSaleHouse.add(1L);
+                    if (!"".equals(chatId) && crawlerService.notifyTelegram(chatToken, chatId,
+                        imageUrl, String.format("%s %s %s", url, description, price))) {
+                      instrumentTelegramSendPhoto.add(1L);
 
-                        // telegram rate limit
-                        Thread.sleep(3000);
-                      }
-                      break;
-                    case 0:
-                      break;
-                    default:
-                      LOGGER.info(String.format("SaleHouse:%s add failed", url));
-                      break;
+                      // telegram rate limit
+                      Thread.sleep(3000);
+                    }
                   }
                 } catch (Exception ex) {
                   LOGGER.warn("SaleHouse element parse error", ex);
@@ -188,6 +189,19 @@ public class Sale591Controller extends JobBase {
       } catch (Exception ex) {
         LOGGER.error("Create crawler error!", ex);
       }
+    }
+
+    private static SaleHouse newSaleHouse(String url, String imageUrl, String description,
+        String price, String maintainer) {
+      SaleHouse obj = new SaleHouse();
+      obj.setUrl(url);
+      obj.setSite("591");
+      obj.setImageUrl(imageUrl);
+      obj.setDescription(description);
+      obj.setPrice(price);
+      obj.setCreateuser(maintainer);
+      obj.setCreatedate(LocalDateTime.now());
+      return obj;
     }
 
     public ResultStatus getResultStatus() {

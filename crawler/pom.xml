@@ -7,7 +7,7 @@
     <version>0.1.0</version>
   </parent>
   <artifactId>crawler</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
@@ -17,12 +17,11 @@
     <opentelemetry.instrumentation.annotation.version>1.21.0</opentelemetry.instrumentation.annotation.version>
     <slf4j.version>2.0.6</slf4j.version>
     <apache.httpcomponents.version>4.5.14</apache.httpcomponents.version>
-    <mybatis.version>3.5.11</mybatis.version>
     <fasterxml.jackson.version>2.14.1</fasterxml.jackson.version>
     <selenium.version>4.7.2</selenium.version>
-    <browserscheduler.version>2.0.3-SNAPSHOT</browserscheduler.version>
+    <browserscheduler.version>2.0.3</browserscheduler.version>
     <auto-browser.version>2.0.3</auto-browser.version>
-    <spring.boot.version>3.0.0</spring.boot.version>
+    <spring.boot.version>3.0.1</spring.boot.version>
 
     <mysql-connector-java.version>8.0.30</mysql-connector-java.version>
     <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
@@ -76,12 +75,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.mybatis</groupId>
-      <artifactId>mybatis</artifactId>
-      <version>${mybatis.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
       <version>${fasterxml.jackson.version}</version>
@@ -121,6 +114,12 @@
       <groupId>org.kquiet</groupId>
       <artifactId>auto-browser</artifactId>
       <version>${auto-browser.version}</version>
+    </dependency>
+    
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+      <version>${spring.boot.version}</version>
     </dependency>
 
     <dependency>
@@ -299,8 +298,6 @@
           <excludes>
             <exclude>logback.xml</exclude>
             <exclude>application.yml</exclude>
-            <exclude>mybatis-config.xml</exclude>
-            <exclude>mybatis-mapper.xml</exclude>
           </excludes>
         </configuration>
       </plugin>

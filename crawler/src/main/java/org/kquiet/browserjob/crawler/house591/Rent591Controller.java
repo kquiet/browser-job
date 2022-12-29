@@ -1,11 +1,15 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.house591;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserjob.crawler.house591.entity.RentHouse;
 import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
 import org.kquiet.browserscheduler.JobBase;
 import org.openqa.selenium.By;
@@ -57,10 +61,10 @@ public class Rent591Controller extends JobBase {
 
     private void config(JobBase job) {
       try {
-        CommonBiz bizObj = SpringBeanConfiguration.getAppContext()
-            .getBean(SpringBeanConfiguration.class).commonBiz();
+        CrawlerService crawlerService =
+            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);
         String botName = job.getParameter("botName");
-        Map<String, String> configMap = bizObj.getBotConfig(botName);
+        Map<String, String> configMap = crawlerService.getBotConfig(botName);
         String entryUrl = configMap.get("entryUrl");
         String chatId = configMap.get("chatId");
         String chatToken = configMap.get("chatToken");
@@ -89,21 +93,20 @@ public class Rent591Controller extends JobBase {
                   String price = priceE.getText();
 
                   // save for each property
-                  int addResult = bizObj.addRentHouse(url, imageUrl, description, price, botName);
-                  switch (addResult) {
-                    case 1:
-                      LOGGER.info(String.format("RentHouse:%s added", url));
-                      if (!"".equals(chatId) && bizObj.notifyTelegram(chatToken, chatId, imageUrl,
-                          String.format("%s %s %s", url, description, price))) {
-                        // telegram rate limit
-                        Thread.sleep(3000);
-                      }
-                      break;
-                    case 0:
-                      break;
-                    default:
-                      LOGGER.info(String.format("RentHouse:%s add failed", url));
-                      break;
+                  House591Service house591Service =
+                      CrawlerBeanConfiguration.getAppContext().getBean(House591Service.class);
+                  RentHouse toAdd = newRentHouse(url, imageUrl, description, price, botName);
+                  boolean isExist = house591Service.existsRentHouse(toAdd.getUrl());
+                  if (!isExist) {
+                    house591Service.addRentHouse(toAdd);
+                    LOGGER.info(String.format("RentHouse:%s added", url));
+
+                    if (!"".equals(chatId) && crawlerService.notifyTelegram(chatToken, chatId,
+                        imageUrl, String.format("%s %s %s", url, description, price))) {
+
+                      // telegram rate limit
+                      Thread.sleep(3000);
+                    }
                   }
                 } catch (Exception ex) {
                   LOGGER.warn("RentHouse element parse error", ex);
@@ -132,6 +135,19 @@ public class Rent591Controller extends JobBase {
       } catch (Exception ex) {
         LOGGER.error("Create crawler error!", ex);
       }
+    }
+
+    private static RentHouse newRentHouse(String url, String imageUrl, String description,
+        String price, String maintainer) {
+      RentHouse obj = new RentHouse();
+      obj.setUrl(url);
+      obj.setSite("591");
+      obj.setImageUrl(imageUrl);
+      obj.setDescription(description);
+      obj.setPrice(price);
+      obj.setCreateuser(maintainer);
+      obj.setCreatedate(LocalDateTime.now());
+      return obj;
     }
 
     public ResultStatus getResultStatus() {
