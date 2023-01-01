@@ -4,6 +4,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    url: ${browser-scheduler.dataSource.jdbcUrl}
+    user: ${browser-scheduler.dataSource.username}
+    password: ${browser-scheduler.dataSource.password}
   security:
     user:
       name: user

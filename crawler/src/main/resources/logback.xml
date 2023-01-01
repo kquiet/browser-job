@@ -199,6 +199,8 @@
     <appender-ref ref="asyncJTextAreaDebug" />
   </root>
   
+  <logger name="org.flywaydb" level="info" />
+  
   <logger name="org.hibernate.SQL" level="debug" />
   
   <logger name="org.hibernate.orm.results" level="debug" />

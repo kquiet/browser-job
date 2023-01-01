@@ -22,6 +22,7 @@
     <browserscheduler.version>2.0.3</browserscheduler.version>
     <auto-browser.version>2.0.3</auto-browser.version>
     <spring.boot.version>3.0.1</spring.boot.version>
+    <flyway.version>9.10.2</flyway.version>
 
     <mysql-connector-java.version>8.0.30</mysql-connector-java.version>
     <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
@@ -121,6 +122,12 @@
       <artifactId>spring-boot-starter-data-jpa</artifactId>
       <version>${spring.boot.version}</version>
     </dependency>
+    
+    <dependency>
+      <groupId>org.flywaydb</groupId>
+      <artifactId>flyway-mysql</artifactId>
+      <version>${flyway.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>mysql</groupId>
@@ -177,6 +184,7 @@
         <includes>
           <include>**/*.xml</include>
           <include>**/*.yml</include>
+          <include>**/*.sql</include>
         </includes>
       </resource>
     </resources>
@@ -187,6 +195,7 @@
         <includes>
           <include>**/*.xml</include>
           <include>**/*.yml</include>
+          <include>**/*.sql</include>
         </includes>
       </testResource>
     </testResources>
@@ -233,6 +242,7 @@
                   <includes>
                     <include>**/*.xml</include>
                     <include>**/*.yml</include>
+                    <include>**/*.sql</include>
                   </includes>
                 </resource>
               </resources>
@@ -258,6 +268,7 @@
                     <include>**/*.sh</include>
                     <include>**/*.xml</include>
                     <include>**/*.yml</include>
+                    <include>**/*.sql</include>
                   </includes>
                 </resource>
               </resources>
