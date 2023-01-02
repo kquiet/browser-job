@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.kquiet</groupId>
     <artifactId>browser-job</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
   </parent>
   <artifactId>crawler</artifactId>
   <version>0.1.1-SNAPSHOT</version>
