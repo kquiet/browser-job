@@ -1,8 +1,8 @@
 # Browser Job
 
-A playground to try various browser jobs through the help of [Browser-Scheduler][].
+This is a playground of various browser jobs powered by [Browser-Scheduler][].
 
-There are some projects in development :
+There is 1 project currently :
 
 |Project|Description|
 |---|---|

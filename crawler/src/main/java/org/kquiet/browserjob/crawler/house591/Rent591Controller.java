@@ -63,7 +63,7 @@ public class Rent591Controller extends JobBase {
       try {
         CrawlerService crawlerService =
             CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);
-        String botName = job.getParameter("botName");
+        String botName = job.getJobName();
         Map<String, String> configMap = crawlerService.getBotConfig(botName);
         String entryUrl = configMap.get("entryUrl");
         String chatId = configMap.get("chatId");

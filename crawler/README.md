@@ -19,18 +19,20 @@ For this job, you need to prepare a MySQL/MariaDb database to store its settings
 There are three columns defined in `botconfig`:
 |Column|Description|
 |---|---|
-|`botname`|bot name|
+|`botname`|bot name; it's derived from the job name|
 |`key`|config name|
 |`value`|config value|
 
-The necessary settings include:
+Necessary settings:
 |key|Description|
 |---|---|
-|`entryUrl`|The URL of [591/sale][] you are going to scrape|
+|`entryUrl`|The target URL of [591/sale][] you are going to scrape|
 |`chatId`|The number shown in the URL of the desired chat after logging in [Telegram Web][]|
 |`chatToken`|The authentication token when your Telegram Bot is created through [Telegram BotFather][]|
 
-After the above stuffs, just invite the created Telegram Bot to the desired chat, then it's all set.
+After the above settings is done, just invite the created Telegram Bot to the desired chat, then it's all set.
+
+As this job adopts [Flyway][], you can write your own script files(.sql) and place them under path `db/migration/` to let Flyway establish the settings for your instead of manually creating them through other SQL tools.
 
 
 [591/sale]: https://sale.591.com.tw/ "591 sale"
@@ -38,3 +40,4 @@ After the above stuffs, just invite the created Telegram Bot to the desired chat
 [Telegram Web]: https://web.telegram.org/z "Telegram Web"
 [Telegram BotFather]: https://core.telegram.org/bots/features#botfather "Telegram BotFather"
 [Browser-Scheduler]: https://github.com/kquiet/browser-scheduler "Browser-Scheduler"
+[Flyway]: https://flywaydb.org/documentation/

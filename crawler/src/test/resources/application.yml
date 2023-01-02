@@ -71,7 +71,7 @@ browser-scheduler:
       testParameter: "VanillaTest2"
   - name: RutenLaunchItem
     enable: false
-    impl: org.kquiet.browserjob.crawler.ruten.LaunchItem
+    impl: org.kquiet.browserjob.crawler.obsolete.ruten.LaunchItem
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 60
@@ -81,7 +81,7 @@ browser-scheduler:
       password: ""
   - name: ShopeeLaunchItem
     enable: false
-    impl: org.kquiet.browserjob.crawler.shopee.LaunchItem
+    impl: org.kquiet.browserjob.crawler.obsolete.shopee.LaunchItem
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 60

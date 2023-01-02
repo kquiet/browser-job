@@ -57,8 +57,6 @@ browser-scheduler:
     dailyEnd: "00:00:00"
     interval: 1800
     scheduleAfterExec: true
-    parameters:
-      botName: "Sale591A"
   - name: Rent591A
     enable: false
     impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
@@ -66,17 +64,6 @@ browser-scheduler:
     dailyEnd: "00:00:00"
     interval: 1800
     scheduleAfterExec: true
-    parameters:
-      botName: "Rent591A"
-  - name: Rent591A
-    enable: false
-    impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
-    dailyStart: "00:00:00"
-    dailyEnd: "00:00:00"
-    interval: 1800
-    scheduleAfterExec: true
-    parameters:
-      botName: "Rent591A"
   - name: Rent591B
     enable: false
     impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
@@ -88,7 +75,7 @@ browser-scheduler:
       botName: "Rent591B"
   - name: CheckExistPC24Switch
     enable: false
-    impl: org.kquiet.browserjob.crawler.CheckExistController
+    impl: org.kquiet.browserjob.crawler.obsolete.CheckExistController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 30
@@ -97,7 +84,7 @@ browser-scheduler:
       botName: "CheckExistPC24Switch"
   - name: CheckExistMoMoSwitch
     enable: false
-    impl: org.kquiet.browserjob.crawler.CheckExistController
+    impl: org.kquiet.browserjob.crawler.obsolete.CheckExistController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 30
@@ -106,7 +93,7 @@ browser-scheduler:
       botName: "CheckExistMoMoSwitch"
   - name: Pchome24hBuy
     enable: false
-    impl: org.kquiet.browserjob.crawler.Pchome24hBuyController
+    impl: org.kquiet.browserjob.crawler.obsolete.Pchome24hBuyController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1
@@ -117,7 +104,7 @@ browser-scheduler:
       loginPwd: "${crawler.pchome24h.loginPassword}"
   - name: EasycardJcbRegister
     enable: false
-    impl: org.kquiet.browserjob.crawler.EasycardJcbRegisterController
+    impl: org.kquiet.browserjob.crawler.obsolete.EasycardJcbRegisterController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1
@@ -129,7 +116,7 @@ browser-scheduler:
       easycard: "XXXX"
   - name: RailwayBook
     enable: false
-    impl: org.kquiet.browserjob.crawler.RailwayBookController
+    impl: org.kquiet.browserjob.crawler.obsolete.RailwayBookController
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
     interval: 1
