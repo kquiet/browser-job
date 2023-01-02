@@ -46,6 +46,8 @@ jobs:
         SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-crawler-$RELEASE_VERSION"
         RELEASE_BRANCH="release/crawler-$RELEASE_VERSION"
         git checkout -b "$RELEASE_BRANCH"
+        mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$RELEASE_VERSION"
+        git commit -am "[staging] prepare release $SCM_TAG"
 
         git checkout dev
         cd crawler
@@ -109,6 +111,9 @@ jobs:
         server-password: MAVEN_SERVER_PASSWORD
         gpg-private-key: ${{ secrets.BOT_GPG_PRIVATE_KEY }}
         gpg-passphrase: MAVEN_GPG_PASSPHRASE
+    - name: Prepare artifacts for later use
+      run: |
+        mvn clean package -B -DskipTests -Darguments=-DskipTests
     - name: Prepare docker image name
       id: prepare-image-name
       run: |
@@ -138,7 +143,7 @@ jobs:
     - name: Build and push docker image for staging artifacts
       uses: docker/build-push-action@v3
       with:
-        context: "./target"
+        context: "./crawler/target"
         push: true
         tags: "${{ steps.prepare-image-name.outputs.full-image-name }},${{ steps.prepare-image-name.outputs.image-name }}:latest"
         labels: ${{ steps.prepare-image-label.outputs.labels }}
