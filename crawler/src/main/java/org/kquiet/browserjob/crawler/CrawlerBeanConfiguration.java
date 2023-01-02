@@ -3,6 +3,8 @@ package org.kquiet.browserjob.crawler;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import javax.sql.DataSource;
+import org.kquiet.browserjob.crawler.dao.CrawlerDao;
+import org.kquiet.browserjob.crawler.house591.House591Service;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -12,6 +14,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -83,5 +86,21 @@ public class CrawlerBeanConfiguration implements ApplicationContextAware {
       @Qualifier("crawlerEntityManagerFactory")
       LocalContainerEntityManagerFactoryBean entityManagerFactory) {
     return new JpaTransactionManager(entityManagerFactory.getObject());
+  }
+
+  @Bean()
+  public CrawlerDao crawlerDao() {
+    return new CrawlerDao();
+  }
+
+  @Bean()
+  public CrawlerService crawlerService() {
+    return new CrawlerService();
+  }
+
+  @Bean()
+  @Scope
+  public House591Service house591Service() {
+    return new House591Service();
   }
 }

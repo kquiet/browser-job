@@ -22,7 +22,6 @@ import org.kquiet.browserjob.crawler.util.NetHelper;
 import org.kquiet.browserjob.crawler.util.SqlTimestampSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 /**
  * crawler dao.
@@ -30,7 +29,6 @@ import org.springframework.stereotype.Component;
  * @author monkey
  *
  */
-@Component
 public class CrawlerDao {
   private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerDao.class);
   private static final String TELEGRAM_URL_SEND_PHOTO = "https://api.telegram.org/bot%s/sendPhoto";

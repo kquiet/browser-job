@@ -9,7 +9,7 @@ import java.util.Map;
 import org.apache.http.client.fluent.Request;
 
 /**
- * NetUtility.
+ * Net helper.
  *
  * @author monkey
  *

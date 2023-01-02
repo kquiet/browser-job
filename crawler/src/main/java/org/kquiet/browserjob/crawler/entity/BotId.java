@@ -17,7 +17,7 @@ public class BotId implements Serializable {
   @Column(name = "botname")
   private String botname;
 
-  @Column(name = "key")
+  @Column(name = "`key`")
   private String key;
 
   public BotId() {}

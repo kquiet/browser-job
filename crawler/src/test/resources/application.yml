@@ -1,6 +1,16 @@
 spring:
   application:
     name: browser-scheduler
+  jpa:
+    hibernate:
+      ddl-auto: none
+  flyway:
+    enabled: true
+    cleanDisabled: false
+    locations: classpath:db/migration
+    url: ${browser-scheduler.dataSource.jdbcUrl}
+    user: ${browser-scheduler.dataSource.username}
+    password: ${browser-scheduler.dataSource.password}
   security:
     user:
       name: user
@@ -24,12 +34,22 @@ management:
       enabled: false
 
 browser-scheduler:
+  dataSource:
+    driverClassName: "com.mysql.cj.jdbc.Driver"
+    jdbcUrl: "jdbc:mysql://${crawler.mysqlIp}:${crawler.mysqlPort}/${crawler.mysqlDb}?useUnicode=yes&characterEncoding=UTF-8&connectTimeout=10000&socketTimeout=10000"
+    username: "${crawler.mysqlUserName}"
+    password: "${crawler.mysqlPassword}"
   instanceName: CrawlerTest
   gui:
-    enable: true
+    enable: false
     clearLogInterval: 86400
+  browser:
+    type: firefox
+    maxTask: 1
+    pageLoadStrategy: none
+    headless: true
   jobParallelism: 1
-  springComponentScanBasePackages: ""
+  springComponentScanBasePackages: "org.kquiet.browserjob"
   jobs:
   - name: VanillaTest1
     enable: true

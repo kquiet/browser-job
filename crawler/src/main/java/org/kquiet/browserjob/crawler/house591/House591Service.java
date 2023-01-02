@@ -7,7 +7,6 @@ import org.kquiet.browserjob.crawler.house591.dao.SaleHouseRepository;
 import org.kquiet.browserjob.crawler.house591.entity.RentHouse;
 import org.kquiet.browserjob.crawler.house591.entity.SaleHouse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
  * @author monkey
  *
  */
-@Service
 public class House591Service {
   @Autowired
   RentHouseRepository rentHouseRepo;

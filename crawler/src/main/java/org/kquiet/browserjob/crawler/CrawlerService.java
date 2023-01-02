@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import org.kquiet.browserjob.crawler.dao.BotConfigRepository;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 /**
  * Common business object.
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
  * @author monkey
  *
  */
-@Service
 public class CrawlerService {
   @Autowired
   private CrawlerDao dao;
