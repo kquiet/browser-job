@@ -27,7 +27,7 @@ jobs:
     concurrency:
       group: deploy-snapshot-${{ github.sha }}
     environment: 
-      name: dockerhub-snapshot
+      name: dockerhub-snapshot    
       url: https://hub.docker.com/r/kquiet/browser-job/tags
     steps:
     - uses: actions/checkout@v3
@@ -54,6 +54,10 @@ jobs:
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
         echo "full-image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
         echo "full image name: $FULL_IMAGE_NAME"
+    - name: Prepare artifacts for later use
+      if: endsWith(steps.prepare-image-name.outputs.full-image-name, '-SNAPSHOT')
+      run: |
+        mvn clean package -B -DskipTests -Darguments=-DskipTests
     - name: Extract git info for docker image labels
       if: endsWith(steps.prepare-image-name.outputs.full-image-name, '-SNAPSHOT')
       id: prepare-image-label
