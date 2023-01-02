@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler.ruten;
+package org.kquiet.browserjob.crawler.obsolete.ruten;
 
 import org.kquiet.browser.BasicActionComposer;
 

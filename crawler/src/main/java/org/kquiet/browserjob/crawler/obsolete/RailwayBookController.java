@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.obsolete;
 
 import java.util.ArrayList;
 import java.util.Arrays;

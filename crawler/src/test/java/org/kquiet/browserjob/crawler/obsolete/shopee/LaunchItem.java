@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler.shopee;
+package org.kquiet.browserjob.crawler.obsolete.shopee;
 
 import java.util.Arrays;
 import java.util.List;

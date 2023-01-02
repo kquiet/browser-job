@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.obsolete;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

@@ -34,7 +34,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @EnableAutoConfiguration
 @DirtiesContext
 @FlywaySupport(cleanBeforeEach = true)
-@Testcontainers
+@Testcontainers(disabledWithoutDocker = true)
 public class CrawlerIntegrationTest {
   private static final String PROPERTY_DATABASE_URL = "browser-scheduler.dataSource.jdbcUrl";
   private static final String PROPERTY_DATABASE_USERNAME = "browser-scheduler.dataSource.username";
