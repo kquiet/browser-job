@@ -1,0 +1,79 @@
+name: continuous-integration
+on:
+  pull_request:
+    types: [opened, reopened]
+    branches:
+    - main
+    - dev
+  push:
+    paths:
+    - '**/pom.xml'
+    - '**/checkstyle.xml'
+    - 'crawler/src/**'
+    - '.github/workflows/continuous-integration.yml'
+    - '.github/workflows/maven-test.yml'
+jobs:
+  call-maven-test:
+    if: github.ref_type == 'branch' && (github.ref_name == 'main' || github.ref_name == 'dev' || startsWith(github.ref_name, 'feature/') || startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/') || endsWith(github.ref_name, '/merge'))
+    uses: ./.github/workflows/maven-test.yml
+    with:
+      ref: ${{ github.sha }}
+    secrets: inherit
+  dockerhub-deploy-snapshot:
+    if: github.ref_type == 'branch' && github.ref_name == 'dev'
+    needs:
+    - call-maven-test
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-snapshot-${{ github.sha }}
+    environment: 
+      name: dockerhub-snapshot
+      url: https://hub.docker.com/r/kquiet/browser-job/tags
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        java-package: jdk
+        architecture: x64
+        distribution: 'temurin'
+        cache: 'maven'
+        server-id: 'ossrh-kquiet'
+        server-username: MAVEN_SERVER_USERNAME
+        server-password: MAVEN_SERVER_PASSWORD
+    - name: Prepare docker image name
+      id: prepare-image-name
+      run: |
+        cd crawler
+        MAVEN_PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+        cd ..
+        IMAGE_NAME="docker.io/kquiet/`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`"
+        cd crawler
+        FULL_IMAGE_NAME="$IMAGE_NAME:crawler-$MAVEN_PROJECT_VERSION"
+        echo "maven-project-version=$MAVEN_PROJECT_VERSION" >> $GITHUB_OUTPUT
+        echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+        echo "full-image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
+        echo "full image name: $FULL_IMAGE_NAME"
+    - name: Extract git info for docker image labels
+      if: endsWith(steps.prepare-image-name.outputs.full-image-name, '-SNAPSHOT')
+      id: prepare-image-label
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ steps.prepare-image-name.outputs.image-name }}
+        labels: |
+          org.opencontainers.image.version=crawler-${{ steps.prepare-image-name.outputs.maven-project-version }}
+    - name: Login to docker hub
+      if: endsWith(steps.prepare-image-name.outputs.full-image-name, '-SNAPSHOT')
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push docker image for snapshot artifacts
+      uses: docker/build-push-action@v3
+      if: endsWith(steps.prepare-image-name.outputs.full-image-name, '-SNAPSHOT')
+      with:
+        context: "./crawler/target"
+        push: true
+        tags: ${{ steps.prepare-image-name.outputs.full-image-name }}
+        labels: ${{ steps.prepare-image-label.outputs.labels }}

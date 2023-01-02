@@ -1,0 +1,167 @@
+name: continuous-delivery-staging
+on:
+  workflow_dispatch:
+jobs:
+  precheck:
+    if: github.ref_type == 'branch' && (github.ref_name == 'dev' || github.ref_name == 'main' || startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/'))
+    runs-on: ubuntu-latest
+    outputs:
+      target-branch: ${{ steps.output-target-branch.outputs.target-branch }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.BOT_ACTION_TOKEN }}
+    - name: Check pom version
+      id: check-pom-version
+      run: |
+        cd crawler
+        MAVEN_PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+        echo "maven pom version: $MAVEN_PROJECT_VERSION"
+        
+        if [[ "${{ github.ref_name }}" == "dev" ]]
+        then
+          REG_OPTION="-SNAPSHOT"
+        fi
+
+        if [[ ! "$MAVEN_PROJECT_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$REG_OPTION$ ]]
+        then
+          echo "maven pom version of ${{ github.ref_name }} doesn't match '""^[0-9]+\.[0-9]+\.[0-9]+$REG_OPTION$'!!!"
+          exit 1
+        fi
+
+        if [[ (! "${{ github.ref_name }}" == "dev") && (! "${{ github.ref_name }}" == "main") && (! "${{ github.ref_name }}" =~ $MAVEN_PROJECT_VERSION$)]]
+        then
+          echo "branch naming:${{ github.ref_name }} doesn't match with maven pom version!!!"
+          exit 1
+        fi
+        
+        echo "pom-version=$MAVEN_PROJECT_VERSION" >> $GITHUB_OUTPUT
+    - name: If dev => create release branch, and set target branch
+      if: github.ref_name == 'dev'
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+
+        RELEASE_VERSION=`echo -n "${{ steps.check-pom-version.outputs.pom-version }}"|sed "s/-SNAPSHOT//"`
+        SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-crawler-$RELEASE_VERSION"
+        RELEASE_BRANCH="release/crawler-$RELEASE_VERSION"
+        git checkout -b "$RELEASE_BRANCH"
+
+        git checkout dev
+        cd crawler
+        mvn versions:set -DgenerateBackupPoms=false -DnextSnapshot=true
+        NEXT_SNAPSHOT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+        git commit -am "[staging] prepare for crawler next development iteration $NEXT_SNAPSHOT_VERSION"
+
+        git push --atomic origin dev $RELEASE_BRANCH
+        echo "TARGET_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
+    - name: If main => create hotfix branch, and set target branch
+      if: github.ref_name == 'main'
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+        cd crawler
+        HOTFIX_VERSION=`mvn versions:set -DgenerateBackupPoms=false -DnextSnapshot=true > /dev/null \
+          && mvn versions:set -DgenerateBackupPoms=false -DremoveSnapshot=true > /dev/null \
+          && mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+        cd ..
+        SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-crawler-$HOTFIX_VERSION"
+        HOTFIX_BRANCH="hotfix/crawler-$HOTFIX_VERSION"
+        git checkout -b "$HOTFIX_BRANCH"
+
+        git push --atomic origin $HOTFIX_BRANCH
+        echo "TARGET_BRANCH=$HOTFIX_BRANCH" >> $GITHUB_ENV
+    - name: If release/* or hotfix/* => set target branch
+      if: startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/')
+      run: |
+        echo "TARGET_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+    - name: Output target branch
+      id: output-target-branch
+      run: |
+        echo "target-branch=${{ env.TARGET_BRANCH }}" >> $GITHUB_OUTPUT
+  call-maven-test:
+    needs: precheck
+    uses: ./.github/workflows/maven-test.yml
+    with:
+      ref: ${{ needs.precheck.outputs.target-branch }}
+    secrets: inherit
+  dockerhub-deploy-staging:
+    needs: [precheck, call-maven-test]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: delivery-staging-${{ needs.precheck.outputs.target-branch }}
+    environment:
+      name: dockerhub-staging
+      url: https://hub.docker.com/r/kquiet/browser-job/tags
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.precheck.outputs.target-branch }}
+    - uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        java-package: jdk
+        architecture: x64
+        distribution: 'temurin'
+        cache: 'maven'
+        server-id: 'ossrh-kquiet'
+        server-username: MAVEN_SERVER_USERNAME
+        server-password: MAVEN_SERVER_PASSWORD
+        gpg-private-key: ${{ secrets.BOT_GPG_PRIVATE_KEY }}
+        gpg-passphrase: MAVEN_GPG_PASSPHRASE
+    - name: Prepare docker image name
+      id: prepare-image-name
+      run: |
+        cd crawler
+        MAVEN_PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+        cd ..
+        IMAGE_NAME="docker.io/kquiet/`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`"
+        cd crawler
+        FULL_IMAGE_NAME="$IMAGE_NAME:crawler-$MAVEN_PROJECT_VERSION"
+        echo "maven-project-version=$MAVEN_PROJECT_VERSION" >> $GITHUB_OUTPUT
+        echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+        echo "full-image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
+        echo "full image name: $FULL_IMAGE_NAME"
+    - name: Extract git info for docker image labels
+      id: prepare-image-label
+      uses: docker/metadata-action@v4
+      with:
+        images: |
+          ${{ steps.prepare-image-name.outputs.image-name }}
+        labels: |
+          org.opencontainers.image.version=crawler-${{ steps.prepare-image-name.outputs.maven-project-version }}
+    - name: Login to docker hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    - name: Build and push docker image for staging artifacts
+      uses: docker/build-push-action@v3
+      with:
+        context: "./target"
+        push: true
+        tags: "${{ steps.prepare-image-name.outputs.full-image-name }},${{ steps.prepare-image-name.outputs.image-name }}:latest"
+        labels: ${{ steps.prepare-image-label.outputs.labels }}
+  create-pull-request:
+    needs: [precheck, call-maven-test, dockerhub-deploy-staging]
+    runs-on: ubuntu-latest
+    concurrency:
+      group: delivery-staging-${{ needs.precheck.outputs.target-branch }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.precheck.outputs.target-branch }}
+    - name: Create or comment a pull request based on main
+      env:
+        GITHUB_TOKEN: ${{ secrets.BOT_ACTION_TOKEN }}
+      run: |
+        TARGET_VERSION=`echo -n "${{ needs.precheck.outputs.target-branch }}"|sed "s/release\///"|sed "s/hotfix\///"`
+        IMAGE="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`:$TARGET_VERSION"
+        COMMENT="[staging] artifacts deployed to dockerhub; you can use docker pull kquiet/$IMAGE to get"
+        OPEN_PR_NUMBER=`gh pr list --limit 1 --state open --base main --head ${{ needs.precheck.outputs.target-branch }} --json number --jq .[0].number`
+        if [[ $OPEN_PR_NUMBER != "" ]]
+        then
+          gh pr comment $OPEN_PR_NUMBER --body "$COMMENT"
+        else
+          gh pr create --base main --head "${{ needs.precheck.outputs.target-branch }}" --assignee "@me" --title "${{ needs.precheck.outputs.target-branch }} into main" --body "$COMMENT"
+        fi

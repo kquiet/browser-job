@@ -5,7 +5,9 @@
   <artifactId>browser-job</artifactId>
   <version>0.1.0</version>
   <packaging>pom</packaging>
+  <name>${project.groupId}:${project.artifactId}</name>
   <description>This is the parent project of all browser job.</description>
+  <url>https://github.com/kquiet/browser-job</url>
   <modules>
     <module>crawler</module>
   </modules>
@@ -163,6 +165,13 @@
       </plugin>
     </plugins>
   </reporting>
+  
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+    </license>
+  </licenses>
 
   <developers>
     <developer>
@@ -170,4 +179,10 @@
       <email>mrkid863@gmail.com</email>
     </developer>
   </developers>
+  
+  <scm>
+    <connection>scm:git:https://github.com/kquiet/browser-job.git</connection>
+    <developerConnection>scm:git:https://github.com/kquiet/browser-job.git</developerConnection>
+    <url>https://github.com/kquiet/browser-job/tree/main</url>
+  </scm>
 </project>
