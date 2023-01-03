@@ -1,6 +1,14 @@
 name: continuous-delivery-staging
 on:
   workflow_dispatch:
+    inputs:
+      project:
+        description: 'project for staging'
+        required: true
+        default: 'crawler'
+        type: choice
+        options:
+        - crawler
 jobs:
   precheck:
     if: github.ref_type == 'branch' && (github.ref_name == 'dev' || github.ref_name == 'main' || startsWith(github.ref_name, 'release/') || startsWith(github.ref_name, 'hotfix/'))
@@ -14,7 +22,7 @@ jobs:
     - name: Check pom version
       id: check-pom-version
       run: |
-        cd crawler
+        cd ${{ inputs.project }}
         MAVEN_PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
         echo "maven pom version: $MAVEN_PROJECT_VERSION"
         
@@ -43,17 +51,17 @@ jobs:
         git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
 
         RELEASE_VERSION=`echo -n "${{ steps.check-pom-version.outputs.pom-version }}"|sed "s/-SNAPSHOT//"`
-        SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-crawler-$RELEASE_VERSION"
-        RELEASE_BRANCH="release/crawler-$RELEASE_VERSION"
+        SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-${{ inputs.project }}-$RELEASE_VERSION"
+        RELEASE_BRANCH="release/${{ inputs.project }}-$RELEASE_VERSION"
         git checkout -b "$RELEASE_BRANCH"
-        cd crawler
+        cd ${{ inputs.project }}
         mvn versions:set -DgenerateBackupPoms=false -DnewVersion="$RELEASE_VERSION"
         git commit -am "[staging] prepare release $SCM_TAG"
 
         git checkout dev
         mvn versions:set -DgenerateBackupPoms=false -DnextSnapshot=true
         NEXT_SNAPSHOT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
-        git commit -am "[staging] prepare for crawler next development iteration $NEXT_SNAPSHOT_VERSION"
+        git commit -am "[staging] prepare for ${{ inputs.project }} next development iteration $NEXT_SNAPSHOT_VERSION"
 
         git push --atomic origin dev $RELEASE_BRANCH
         echo "TARGET_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
@@ -62,14 +70,15 @@ jobs:
       run: |
         git config --global user.name 'github-actions[bot]'
         git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
-        cd crawler
+        cd ${{ inputs.project }}
         HOTFIX_VERSION=`mvn versions:set -DgenerateBackupPoms=false -DnextSnapshot=true > /dev/null \
           && mvn versions:set -DgenerateBackupPoms=false -DremoveSnapshot=true > /dev/null \
           && mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
         cd ..
-        SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-crawler-$HOTFIX_VERSION"
-        HOTFIX_BRANCH="hotfix/crawler-$HOTFIX_VERSION"
+        SCM_TAG="`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`-${{ inputs.project }}-$HOTFIX_VERSION"
+        HOTFIX_BRANCH="hotfix/${{ inputs.project }}-$HOTFIX_VERSION"
         git checkout -b "$HOTFIX_BRANCH"
+        git commit -am "[staging] prepare hotfix $SCM_TAG"
 
         git push --atomic origin $HOTFIX_BRANCH
         echo "TARGET_BRANCH=$HOTFIX_BRANCH" >> $GITHUB_ENV
@@ -117,12 +126,12 @@ jobs:
     - name: Prepare docker image name
       id: prepare-image-name
       run: |
-        cd crawler
+        cd ${{ inputs.project }}
         MAVEN_PROJECT_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
         cd ..
         IMAGE_NAME="docker.io/kquiet/`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`"
-        cd crawler
-        FULL_IMAGE_NAME="$IMAGE_NAME:crawler-$MAVEN_PROJECT_VERSION"
+        cd ${{ inputs.project }}
+        FULL_IMAGE_NAME="$IMAGE_NAME:${{ inputs.project }}-$MAVEN_PROJECT_VERSION"
         echo "maven-project-version=$MAVEN_PROJECT_VERSION" >> $GITHUB_OUTPUT
         echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
         echo "full-image-name=$FULL_IMAGE_NAME" >> $GITHUB_OUTPUT
@@ -134,7 +143,7 @@ jobs:
         images: |
           ${{ steps.prepare-image-name.outputs.image-name }}
         labels: |
-          org.opencontainers.image.version=crawler-${{ steps.prepare-image-name.outputs.maven-project-version }}
+          org.opencontainers.image.version=${{ inputs.project }}-${{ steps.prepare-image-name.outputs.maven-project-version }}
     - name: Login to docker hub
       uses: docker/login-action@v2
       with:
@@ -143,7 +152,7 @@ jobs:
     - name: Build and push docker image for staging artifacts
       uses: docker/build-push-action@v3
       with:
-        context: "./crawler/target"
+        context: "./${{ inputs.project }}/target"
         push: true
         tags: "${{ steps.prepare-image-name.outputs.full-image-name }}"
         labels: ${{ steps.prepare-image-label.outputs.labels }}

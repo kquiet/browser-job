@@ -9,7 +9,7 @@ on:
     paths:
     - '**/pom.xml'
     - '**/checkstyle.xml'
-    - 'crawler/src/**'
+    - '*/src/**'
     - '.github/workflows/continuous-integration.yml'
     - '.github/workflows/maven-test.yml'
 jobs:
@@ -27,7 +27,7 @@ jobs:
     concurrency:
       group: deploy-snapshot-${{ github.sha }}
     environment: 
-      name: dockerhub-snapshot    
+      name: dockerhub-snapshot
       url: https://hub.docker.com/r/kquiet/browser-job/tags
     steps:
     - uses: actions/checkout@v3
