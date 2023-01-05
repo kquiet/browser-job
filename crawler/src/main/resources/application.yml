@@ -35,9 +35,9 @@ management:
 browser-scheduler:
   dataSource:
     driverClassName: "com.mysql.cj.jdbc.Driver"
-    jdbcUrl: "jdbc:mysql://${crawler.mysqlIp}:${crawler.mysqlPort}/${crawler.mysqlDb}?useUnicode=yes&characterEncoding=UTF-8&connectTimeout=10000&socketTimeout=10000"
-    username: "${crawler.mysqlUserName}"
-    password: "${crawler.mysqlPassword}"
+    jdbcUrl: "jdbc:mysql://${crawler_mysql_host}:${crawler_mysql_port}/${crawler_mysql_db}?useUnicode=yes&characterEncoding=UTF-8&connectTimeout=10000&socketTimeout=10000"
+    username: "${crawler_mysql_username}"
+    password: "${crawler_mysql_password}"
   instanceName: Crawler
   gui:
     enable: false
