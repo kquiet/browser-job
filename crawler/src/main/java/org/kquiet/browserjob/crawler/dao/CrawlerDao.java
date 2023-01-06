@@ -128,8 +128,7 @@ public class CrawlerDao {
       throws ClientProtocolException, IOException {
     HttpResponse resp = null;
     try {
-      Request req =
-          netHelper.httpRequest(httpMethod, url).connectTimeout(10000).socketTimeout(10000);
+      Request req = netHelper.httpRequest(httpMethod, url);
       requestConsumer.accept(req);
 
       resp = req.execute().returnResponse();

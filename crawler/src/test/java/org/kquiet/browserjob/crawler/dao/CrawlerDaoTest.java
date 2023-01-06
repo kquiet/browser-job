@@ -55,8 +55,7 @@ class CrawlerDaoTest {
   }
 
   private void mockTelegramHttpCallChain() throws ClientProtocolException, IOException {
-    when(netHelper.httpRequest(Mockito.eq("post"), Mockito.anyString())
-        .connectTimeout(Mockito.anyInt()).socketTimeout(Mockito.anyInt())).thenReturn(req);
+    when(netHelper.httpRequest(Mockito.eq("post"), Mockito.anyString())).thenReturn(req);
     when(req.execute().returnResponse()).thenReturn(httpResp);
     when(httpResp.getStatusLine().getStatusCode()).thenReturn(200);
     when(httpResp.getEntity()).thenReturn(httpEntity);
