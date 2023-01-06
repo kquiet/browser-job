@@ -22,6 +22,7 @@ import org.kquiet.browserjob.crawler.util.NetHelper;
 import org.kquiet.browserjob.crawler.util.SqlTimestampSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * crawler dao.
@@ -31,7 +32,9 @@ import org.slf4j.LoggerFactory;
  */
 public class CrawlerDao {
   private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerDao.class);
-  private static final String TELEGRAM_URL_SEND_PHOTO = "https://api.telegram.org/bot%s/sendPhoto";
+
+  @Value("${BROWSERSCHEDULER_TELEGRAMAPI_SENDPHOTOURL:https://api.telegram.org/bot%s/sendPhoto}")
+  private String telegramSendPhotoUrl = "https://api.telegram.org/bot%s/sendPhoto";
 
   private NetHelper netHelper = new NetHelper();
   private ObjectMapper objectMapper = getDefaultMapperForJson();
@@ -46,7 +49,7 @@ public class CrawlerDao {
    * @return api result
    */
   public boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {
-    String apiUrl = String.format(TELEGRAM_URL_SEND_PHOTO, token);
+    String apiUrl = String.format(telegramSendPhotoUrl, token);
     Map<String, Object> jsonBodyParam = new HashMap<>();
     jsonBodyParam.put("chat_id", chatId);
     jsonBodyParam.put("photo", imageUrl);
@@ -71,7 +74,7 @@ public class CrawlerDao {
    * @return api result
    */
   public boolean notifyTelegram(String token, String chatId, File photo, String caption) {
-    String apiUrl = String.format(TELEGRAM_URL_SEND_PHOTO, token);
+    String apiUrl = String.format(telegramSendPhotoUrl, token);
     HttpEntity entity =
         MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)
             .addBinaryBody("photo", photo, ContentType.MULTIPART_FORM_DATA, null)
