@@ -57,6 +57,8 @@ browser-scheduler:
     dailyEnd: "00:00:00"
     interval: 1800
     scheduleAfterExec: true
+    parameters:
+      takeScreenshot: "true"
   - name: Rent591A
     enable: false
     impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
@@ -64,6 +66,8 @@ browser-scheduler:
     dailyEnd: "00:00:00"
     interval: 1800
     scheduleAfterExec: true
+    parameters:
+      takeScreenshot: "true"
   - name: Rent591B
     enable: false
     impl: org.kquiet.browserjob.crawler.house591.Rent591Controller
@@ -72,7 +76,7 @@ browser-scheduler:
     interval: 1800
     scheduleAfterExec: true
     parameters:
-      botName: "Rent591B"
+      takeScreenshot: "true"
   - name: CheckExistPC24Switch
     enable: false
     impl: org.kquiet.browserjob.crawler.obsolete.CheckExistController
