@@ -1,10 +1,13 @@
 package org.kquiet.browserjob.crawler;
 
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -16,6 +19,9 @@ import org.kquiet.browserjob.crawler.entity.BotId;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 
 @ExtendWith(MockitoExtension.class)
 class CrawlerServiceTest {
@@ -24,6 +30,9 @@ class CrawlerServiceTest {
 
   @Mock
   BotConfigRepository botConfigRepo;
+
+  @Mock(extraInterfaces = {TakesScreenshot.class})
+  WebDriver webdriver;
 
   @InjectMocks
   CrawlerService crawlerService;
@@ -56,5 +65,21 @@ class CrawlerServiceTest {
     when(daoObj.notifyTelegram(token, chatId, photo, caption)).thenReturn(true);
 
     assertEquals(true, crawlerService.notifyTelegram(token, chatId, photo, caption));
+  }
+
+  @ParameterizedTest()
+  @CsvSource({"log"})
+  void takeScreenShot(String pathName) {
+    when(((TakesScreenshot) webdriver).getScreenshotAs(OutputType.BYTES)).thenReturn(new byte[0]);
+    when(webdriver.getPageSource()).thenReturn("");
+    Path parentPath = Path.of("", pathName);
+
+    List<Path> resultPaths = crawlerService.takeScreenShot(webdriver, parentPath);
+    assertEquals(2, resultPaths.size());
+    assertDoesNotThrow(() -> Files.delete(resultPaths.get(0)));
+    assertDoesNotThrow(() -> Files.delete(resultPaths.get(1)));
+
+    Path p1 = resultPaths.get(0).getParent();
+    assertEquals(pathName, p1.getFileName().toString());
   }
 }

@@ -30,13 +30,14 @@ import org.slf4j.LoggerFactory;
  */
 public class Sale591Controller extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(Sale591Controller.class);
-  private static final Meter meter = CrawlerBeanConfiguration.getAppContext()
+  private static final Meter METER = CrawlerBeanConfiguration.getAppContext()
       .getBean(OpenTelemetry.class).getMeter(Sale591Controller.class.getCanonicalName());
-  private static final LongCounter instrumentTelegramSendPhoto =
-      meter.counterBuilder("telegram_sendPhoto")
+  private static final LongCounter INSTRUMENT_TELEGRAM_SENDPHOTO =
+      METER.counterBuilder("new_sale_house_telegram_sendPhoto")
           .setDescription("count of succesful telegram sendPhoto api").build();
-  private static final LongCounter instrumentNewSaleHouse = meter.counterBuilder("new_sale_house")
-      .setDescription("count of creation of new sale house").build();
+  private static final LongCounter INSTRUMENT_NEW_SALE_HOUSE =
+      METER.counterBuilder("new_sale_house").setDescription("count of creation of new sale house")
+          .build();
 
   public Sale591Controller(JobConfig config) {
     super(config);
@@ -63,7 +64,6 @@ public class Sale591Controller extends JobBase {
   private static class Sale591Crawler extends BasicActionComposer {
     private static final Logger LOGGER = LoggerFactory.getLogger(Sale591Crawler.class);
 
-
     private ResultStatus resultStatus = ResultStatus.WaitingToDo;
     private String message;
 
@@ -81,9 +81,14 @@ public class Sale591Controller extends JobBase {
         String entryUrl = configMap.get("entryUrl");
         String chatId = configMap.get("chatId");
         String chatToken = configMap.get("chatToken");
+        boolean takeScreentshot = Boolean.parseBoolean(job.getParameter("takeScreenshot"));
 
         new ActionComposerBuilder().prepareActionSequence().getUrl(entryUrl).justWait(3000)
             .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id("j-loading")), 10000)
+            .waitUntil(
+                ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(
+                    "//div[contains(@class,'houseList-body')]/div[contains(@class,'j-house')]")),
+                10000)
             .customMultiPhase(mp -> ac -> { // handle pop up box
               try {
                 List<WebElement> popBoxList = ac.getWebDriver()
@@ -93,12 +98,15 @@ public class Sale591Controller extends JobBase {
                 }
                 mp.noNextPhase();
               } catch (Exception ex) {
-                LOGGER.warn(String.format("pop up box handling failed", ex));
+                LOGGER.warn("pop up box handling failed", ex);
               }
             }).custom(ac -> {
               List<WebElement> propertyList = ac.getWebDriver().findElements(By.xpath(
                   "//div[contains(@class,'houseList-body')]/div[contains(@class,'j-house')]"));
               LOGGER.info("{} found {} properties", getName(), propertyList.size());
+              if (takeScreentshot && propertyList.size() == 0) {
+                crawlerService.takeScreenShot(ac.getWebDriver());
+              }
 
               for (WebElement property : propertyList) {
                 try {
@@ -153,10 +161,10 @@ public class Sale591Controller extends JobBase {
                   if (!isExist) {
                     house591Service.addSaleHouse(toAdd);
                     LOGGER.info(String.format("SaleHouse:%s added", url));
-                    instrumentNewSaleHouse.add(1L);
+                    INSTRUMENT_NEW_SALE_HOUSE.add(1L);
                     if (!"".equals(chatId) && crawlerService.notifyTelegram(chatToken, chatId,
                         imageUrl, String.format("%s %s %s", url, description, price))) {
-                      instrumentTelegramSendPhoto.add(1L);
+                      INSTRUMENT_TELEGRAM_SENDPHOTO.add(1L);
 
                       // telegram rate limit
                       Thread.sleep(3000);

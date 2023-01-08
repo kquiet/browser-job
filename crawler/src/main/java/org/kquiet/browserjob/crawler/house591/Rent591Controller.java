@@ -1,5 +1,8 @@
 package org.kquiet.browserjob.crawler.house591;
 
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -26,6 +29,14 @@ import org.slf4j.LoggerFactory;
  */
 public class Rent591Controller extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Controller.class);
+  private static final Meter METER = CrawlerBeanConfiguration.getAppContext()
+      .getBean(OpenTelemetry.class).getMeter(Sale591Controller.class.getCanonicalName());
+  private static final LongCounter INSTRUMENT_TELEGRAM_SENDPHOTO =
+      METER.counterBuilder("new_rent_house_telegram_sendPhoto")
+          .setDescription("count of succesful telegram sendPhoto api").build();
+  private static final LongCounter INSTRUMENT_NEW_RENT_HOUSE =
+      METER.counterBuilder("new_rent_house").setDescription("count of creation of new rent house")
+          .build();
 
   public Rent591Controller(JobConfig config) {
     super(config);
@@ -68,13 +79,19 @@ public class Rent591Controller extends JobBase {
         String entryUrl = configMap.get("entryUrl");
         String chatId = configMap.get("chatId");
         String chatToken = configMap.get("chatToken");
+        boolean takeScreentshot = Boolean.parseBoolean(job.getParameter("takeScreenshot"));
 
         new ActionComposerBuilder().prepareActionSequence().getUrl(entryUrl).justWait(3000)
             .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id("j-loading")), 10000)
+            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                By.xpath("//section[contains(@class,'vue-list-rent-item')]/a")), 10000)
             .custom(ac -> {
               List<WebElement> propertyList = ac.getWebDriver()
                   .findElements(By.xpath("//section[contains(@class,'vue-list-rent-item')]/a"));
               LOGGER.info("{} found {} properties", getName(), propertyList.size());
+              if (takeScreentshot && propertyList.size() == 0) {
+                crawlerService.takeScreenShot(ac.getWebDriver());
+              }
 
               for (WebElement property : propertyList) {
                 try {
@@ -100,9 +117,10 @@ public class Rent591Controller extends JobBase {
                   if (!isExist) {
                     house591Service.addRentHouse(toAdd);
                     LOGGER.info(String.format("RentHouse:%s added", url));
-
+                    INSTRUMENT_NEW_RENT_HOUSE.add(1L);
                     if (!"".equals(chatId) && crawlerService.notifyTelegram(chatToken, chatId,
                         imageUrl, String.format("%s %s %s", url, description, price))) {
+                      INSTRUMENT_TELEGRAM_SENDPHOTO.add(1L);
 
                       // telegram rate limit
                       Thread.sleep(3000);
