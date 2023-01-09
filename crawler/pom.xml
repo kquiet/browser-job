@@ -7,7 +7,7 @@
     <version>0.1.0</version>
   </parent>
   <artifactId>crawler</artifactId>
-  <version>0.1.6</version>
+  <version>0.1.7</version>
   <packaging>jar</packaging>
   <url>https://github.com/kquiet/browser-job/crawler</url>
 
@@ -71,12 +71,6 @@
       <groupId>io.opentelemetry.instrumentation</groupId>
       <artifactId>opentelemetry-instrumentation-annotations</artifactId>
       <version>${opentelemetry.instrumentation.annotation.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>fluent-hc</artifactId>
-      <version>${apache.httpcomponents.version}</version>
     </dependency>
 
     <dependency>
