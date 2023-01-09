@@ -5,20 +5,28 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.fluent.Request;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.mime.HttpMultipartMode;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.util.EntityUtils;
 import org.kquiet.browserjob.crawler.util.DoubleSerializer;
 import org.kquiet.browserjob.crawler.util.FloatSerializer;
-import org.kquiet.browserjob.crawler.util.NetHelper;
 import org.kquiet.browserjob.crawler.util.SqlTimestampSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,8 +44,10 @@ public class CrawlerDao {
   @Value("${BROWSERSCHEDULER_TELEGRAMAPI_SENDPHOTOURL:https://api.telegram.org/bot%s/sendPhoto}")
   private String telegramSendPhotoUrl = "https://api.telegram.org/bot%s/sendPhoto";
 
-  private NetHelper netHelper = new NetHelper();
   private ObjectMapper objectMapper = getDefaultMapperForJson();
+
+  private HttpClient.Builder httpClientBuilder =
+      HttpClient.newBuilder().version(Version.HTTP_2).followRedirects(Redirect.NORMAL);
 
   /**
    * notify through telegram sendPhoto api.
@@ -55,7 +65,7 @@ public class CrawlerDao {
     jsonBodyParam.put("photo", imageUrl);
     jsonBodyParam.put("caption", caption);
     try {
-      HttpResult result = httpJson("post", apiUrl, jsonBodyParam);
+      HttpResult result = httpPostJson(apiUrl, jsonBodyParam);
       LOGGER.debug("notifyTelegram result:{} {}", result.getStatusCode(), result.getResponse());
       return result.getStatusCode() == 200;
     } catch (Exception ex) {
@@ -81,7 +91,7 @@ public class CrawlerDao {
             .addTextBody("chat_id", chatId).addTextBody("caption", caption).build();
 
     try {
-      HttpResult result = http("post", apiUrl, entity);
+      HttpResult result = httpPostMultipart(apiUrl, entity);
       LOGGER.debug("notifyTelegram result:{} {}", result.getStatusCode(), result.getResponse());
       return result.getStatusCode() == 200;
     } catch (Exception ex) {
@@ -90,56 +100,44 @@ public class CrawlerDao {
     }
   }
 
-  HttpResult httpJson(String httpMethod, String url, Map<String, Object> jsonBodyParam)
-      throws ClientProtocolException, IOException {
-    Consumer<Request> consumer = (r) -> {
-    };
+  HttpResult httpPostJson(String url, Map<String, Object> jsonBodyParam)
+      throws URISyntaxException, IOException, InterruptedException {
+    HttpClient httpClient = httpClientBuilder.build();
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(new URI(url)).header("Content-Type",
+        "application/json; charset=UTF-8");
 
     if (jsonBodyParam != null && !jsonBodyParam.isEmpty()) {
-      Map<String, String> httpHeader = new HashMap<>();
-      httpHeader.put("Content-type", "application/json; charset=UTF-8");
-
-      byte[] body = objectMapper.writeValueAsString(jsonBodyParam).getBytes("UTF-8");
-
-      consumer = (r) -> {
-        netHelper.addHeader(r, httpHeader);
-        r.bodyByteArray(body);
-      };
+      requestBuilder.POST(BodyPublishers.ofString(objectMapper.writeValueAsString(jsonBodyParam),
+          StandardCharsets.UTF_8));
     }
 
-    return http(httpMethod, url, consumer);
+    HttpResponse<String> resp =
+        httpClient.send(requestBuilder.build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+    return new HttpResult(resp.statusCode(), resp.body());
   }
 
-  HttpResult http(String httpMethod, String url, HttpEntity bodyEntity)
-      throws ClientProtocolException, IOException {
-    Consumer<Request> consumer = (r) -> {
-    };
+  HttpResult httpPostMultipart(String url, HttpEntity httpEntity)
+      throws URISyntaxException, IOException, InterruptedException {
+    HttpClient httpClient = httpClientBuilder.build();
+    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(new URI(url)).header("Content-Type",
+        httpEntity.getContentType().getValue());
 
-    if (bodyEntity != null) {
-      consumer = (r) -> {
-        r.body(bodyEntity);
-      };
-    }
-
-    return http(httpMethod, url, consumer);
-  }
-
-  private HttpResult http(String httpMethod, String url, Consumer<Request> requestConsumer)
-      throws ClientProtocolException, IOException {
-    HttpResponse resp = null;
-    try {
-      Request req = netHelper.httpRequest(httpMethod, url);
-      requestConsumer.accept(req);
-
-      resp = req.execute().returnResponse();
-      int statusCode = resp.getStatusLine().getStatusCode();
-      String response = EntityUtils.toString(resp.getEntity(), "UTF-8");
-      return new HttpResult(statusCode, response);
-    } finally {
-      if (resp != null) {
-        EntityUtils.consume(resp.getEntity());
+    Pipe pipe = Pipe.open();
+    CompletableFuture.runAsync(() -> {
+      try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {
+        httpEntity.writeTo(outputStream);
+      } catch (Exception ex) {
+        LOGGER.warn("httpEntity write failed", ex);
       }
-    }
+    });
+
+    requestBuilder.POST(BodyPublishers.ofInputStream(() -> Channels.newInputStream(pipe.source())));
+
+    HttpResponse<String> resp =
+        httpClient.send(requestBuilder.build(), BodyHandlers.ofString(StandardCharsets.UTF_8));
+
+    return new HttpResult(resp.statusCode(), resp.body());
   }
 
   private ObjectMapper getDefaultMapperForJson() {
