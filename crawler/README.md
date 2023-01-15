@@ -1,4 +1,4 @@
-# Crawler
+# Crawler [![Coverage](https://raw.githubusercontent.com/kquiet/browser-job/gh-pages/.github/coverage/crawler/coverage.svg)](https://kquiet.github.io/browser-job/crawler/)
 
 This project is an experiment project to scrape various websites for later automation.
 

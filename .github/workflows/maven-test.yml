@@ -8,7 +8,6 @@ on:
         type: string
 jobs:
   maven-test:
-    name: maven-test
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -22,3 +21,8 @@ jobs:
         distribution: 'temurin'
         cache: 'maven'
     - run: mvn -B clean verify
+    - name: Upload JaCoCo coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: jacoco-report-${{ inputs.ref }}
+        path: crawler/target/site/jacoco/

@@ -1,0 +1,62 @@
+name: generate-coverage-badge
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      module:
+        required: true
+        type: string
+jobs:
+  generate-coverage-badge:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        ref: gh-pages
+    - name: Prepare coverage folders
+      run: |
+        rm -rf .github/coverage/${{ inputs.module }}
+        mkdir -p .github/coverage/${{ inputs.module }}
+    - name: Download JaCoCo coverage report
+      uses: actions/download-artifact@v3
+      with:
+        name: jacoco-report-${{ inputs.ref }}
+        path: .github/coverage/${{ inputs.module }}
+    - name: Generate JaCoCo Badges
+      uses: cicirello/jacoco-badge-generator@v2
+      with:
+        generate-branches-badge: true
+        jacoco-csv-file: .github/coverage/${{ inputs.module }}/jacoco.csv
+        badges-directory: .github/coverage/${{ inputs.module }}
+        coverage-badge-filename: coverage.svg
+        branches-badge-filename: branches.svg
+    - name: Commits changes
+      run: |
+        if [[ `git status --porcelain` ]]; then
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "update coverage report and badges for ${{ inputs.module }}"
+          git push
+        fi
+    - name: Upload coverage report as github pages
+      uses: actions/upload-pages-artifact@v1
+      with:
+        path: .github/coverage
+  deploy-github-page:
+    needs:
+    - generate-coverage-badge
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v1
