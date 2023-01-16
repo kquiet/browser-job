@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CrawlerBeanConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler</a> &gt; <span class="el_source">CrawlerBeanConfiguration.java</span></div><h1>CrawlerBeanConfiguration.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
+import javax.sql.DataSource;
+import org.kquiet.browserjob.crawler.dao.CrawlerDao;
+import org.kquiet.browserjob.crawler.house591.House591Service;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.DataSourceBuilder;
+import org.springframework.boot.orm.jpa.EntityManagerFactoryBuilder;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+/**
+ * Spring bean configuration.
+ *
+ * @author monkey
+ *
+ */
+@Configuration
+@EnableJpaRepositories(basePackages = &quot;org.kquiet.browserjob.crawler&quot;,
+    entityManagerFactoryRef = &quot;crawlerEntityManagerFactory&quot;,
+    transactionManagerRef = &quot;crawlerTransactionManager&quot;)
+@EnableTransactionManagement
+<span class="nc" id="L35">public class CrawlerBeanConfiguration implements ApplicationContextAware {</span>
+  private static ApplicationContext context;
+
+  @Override
+  public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+<span class="nc" id="L40">    context = applicationContext;</span>
+<span class="nc" id="L41">  }</span>
+
+  public static ApplicationContext getAppContext() {
+<span class="nc" id="L44">    return context;</span>
+  }
+
+  @Bean
+  public OpenTelemetry openTelemetry() {
+<span class="nc" id="L49">    return GlobalOpenTelemetry.get();</span>
+  }
+
+  /**
+   * data source.
+   *
+   * @return data source
+   */
+  @Bean(&quot;crawlerDataSource&quot;)
+  @ConfigurationProperties(prefix = &quot;browser-scheduler.datasource&quot;)
+  public DataSource dataSource() {
+<span class="nc" id="L60">    return DataSourceBuilder.create().build();</span>
+  }
+
+  /**
+   * local container entity manager factory bean.
+   *
+   * @param dataSource data source
+   * @param builder entity manager factory builder
+   * @return local container entity manager factory bean
+   */
+  @Bean(&quot;crawlerEntityManagerFactory&quot;)
+  public LocalContainerEntityManagerFactoryBean entityManagerFactory(
+      @Qualifier(&quot;crawlerDataSource&quot;) DataSource dataSource, EntityManagerFactoryBuilder builder) {
+<span class="nc" id="L73">    return builder //</span>
+<span class="nc" id="L74">        .dataSource(dataSource).packages(CrawlerBeanConfiguration.class.getPackageName())</span>
+<span class="nc" id="L75">        .persistenceUnit(&quot;crawlerPersistenceUnit&quot;).build();</span>
+  }
+
+  /**
+   * transaction manager.
+   *
+   * @param entityManagerFactory entity manager factory
+   * @return trasaction manager
+   */
+  @Bean(&quot;crawlerTransactionManager&quot;)
+  public PlatformTransactionManager transactionManager(
+      @Qualifier(&quot;crawlerEntityManagerFactory&quot;)
+      LocalContainerEntityManagerFactoryBean entityManagerFactory) {
+<span class="nc" id="L88">    return new JpaTransactionManager(entityManagerFactory.getObject());</span>
+  }
+
+  @Bean()
+  public CrawlerDao crawlerDao() {
+<span class="nc" id="L93">    return new CrawlerDao();</span>
+  }
+
+  @Bean()
+  public CrawlerService crawlerService() {
+<span class="nc" id="L98">    return new CrawlerService();</span>
+  }
+
+  @Bean()
+  @Scope
+  public House591Service house591Service() {
+<span class="nc" id="L104">    return new House591Service();</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

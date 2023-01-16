@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EasycardJcbRegisterController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.obsolete</a> &gt; <span class="el_source">EasycardJcbRegisterController.java</span></div><h1>EasycardJcbRegisterController.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.obsolete;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
+import org.kquiet.browserscheduler.JobController.InteractionType;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * EasycardJcbRegisterController.
+ *
+ * @author monkey
+ *
+ */
+public class EasycardJcbRegisterController extends JobBase {
+<span class="nc" id="L29">  private static final Logger logger = LoggerFactory.getLogger(EasycardJcbRegisterController.class);</span>
+
+  public EasycardJcbRegisterController(JobConfig config) {
+<span class="nc" id="L32">    super(config);</span>
+<span class="nc" id="L33">  }</span>
+
+  @Override
+  public void run() {
+    try {
+<span class="nc" id="L38">      int parallelism = 1;</span>
+      try {
+<span class="nc" id="L40">        parallelism = Integer.parseInt(this.getParameter(&quot;parallelism&quot;));</span>
+<span class="nc" id="L41">      } catch (Exception e) {</span>
+<span class="nc" id="L42">        logger.debug(&quot;Job {} default parallelism 1&quot;, getJobName());</span>
+<span class="nc" id="L43">      }</span>
+<span class="nc" id="L44">      EasycardJcbRegisterCrawler[] crawlerArr = new EasycardJcbRegisterCrawler[parallelism];</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">      for (int i = 0; i &lt; parallelism; i++) {</span>
+<span class="nc" id="L46">        crawlerArr[i] = new EasycardJcbRegisterCrawler(this, UUID.randomUUID().toString());</span>
+<span class="nc" id="L47">        this.submitBrowserTask(crawlerArr[i]);</span>
+      }
+<span class="nc" id="L49">      CompletableFuture.allOf(crawlerArr).get();</span>
+<span class="nc" id="L50">      logger.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L51">    } catch (Exception e) {</span>
+<span class="nc" id="L52">      logger.error(&quot;generate crawler task error:{}&quot;, e);</span>
+<span class="nc" id="L53">    }</span>
+<span class="nc" id="L54">  }</span>
+
+  private void submitBrowserTask(EasycardJcbRegisterCrawler bac) {
+<span class="nc" id="L57">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L58">    logger.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L59">  }</span>
+
+  private static class EasycardJcb {
+    private final String creditcard;
+    private final String easycard;
+
+<span class="nc" id="L65">    public EasycardJcb(JobBase job) {</span>
+<span class="nc" id="L66">      creditcard = job.getParameter(&quot;creditcard&quot;);</span>
+<span class="nc" id="L67">      easycard = job.getParameter(&quot;easycard&quot;);</span>
+<span class="nc" id="L68">    }</span>
+
+    public String getCreditcard() {
+<span class="nc" id="L71">      return creditcard;</span>
+    }
+
+    public String getEasycard() {
+<span class="nc" id="L75">      return easycard;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L80">      return String.join(&quot;+&quot;, creditcard, easycard);</span>
+    }
+  }
+
+  private static class EasycardJcbRegisterCrawler extends BasicActionComposer {
+<span class="nc" id="L85">    private static final Logger logger = LoggerFactory.getLogger(EasycardJcbRegisterCrawler.class);</span>
+<span class="nc" id="L86">    private static Set&lt;String&gt; submitted =</span>
+<span class="nc" id="L87">        Collections.newSetFromMap(new ConcurrentHashMap&lt;String, Boolean&gt;());</span>
+
+<span class="nc" id="L89">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+    private String message;
+
+    public EasycardJcbRegisterCrawler(EasycardJcbRegisterController controller, String postfix) {
+<span class="nc" id="L93">      super();</span>
+<span class="nc" id="L94">      config(controller, postfix);</span>
+<span class="nc" id="L95">    }</span>
+
+    private void config(EasycardJcbRegisterController controller, String postfix) {
+      try {
+<span class="nc" id="L99">        boolean autoSubmit = Boolean.parseBoolean(controller.getParameter(&quot;autoSubmit&quot;));</span>
+<span class="nc" id="L100">        EasycardJcb card = new EasycardJcb(controller);</span>
+
+<span class="nc" id="L102">        String pageUrl = &quot;https://ezweb.easycard.com.tw/Event01/JCBLoginServlet&quot;;</span>
+        // String pageUrl = &quot;file:///C:/Users/kimberly/Desktop/JCB_Login_Form_Before_Click.html&quot;;
+<span class="nc" id="L104">        By infoBy = By.id(&quot;content&quot;);</span>
+<span class="nc" id="L105">        Pattern fullPattern = Pattern.compile(&quot;很抱歉，本月份登錄名額已滿&quot;);</span>
+<span class="nc" id="L106">        Pattern notYetOpenPattern = Pattern.compile(&quot;本月份尚未開放&quot;);</span>
+<span class="nc" id="L107">        Pattern successPattern = Pattern.compile(&quot;登錄成功&quot;);</span>
+<span class="nc" id="L108">        By agreeCheckboxBy = By.id(&quot;accept&quot;);</span>
+<span class="nc" id="L109">        By creditcard1By = By.id(&quot;txtCreditCard1&quot;);</span>
+<span class="nc" id="L110">        By creditcard2By = By.id(&quot;txtCreditCard2&quot;);</span>
+<span class="nc" id="L111">        By creditcard4By = By.id(&quot;txtCreditCard4&quot;);</span>
+<span class="nc" id="L112">        By easycard1By = By.id(&quot;txtEasyCard1&quot;);</span>
+<span class="nc" id="L113">        By easycard2By = By.id(&quot;txtEasyCard2&quot;);</span>
+<span class="nc" id="L114">        By easycard3By = By.id(&quot;txtEasyCard3&quot;);</span>
+<span class="nc" id="L115">        By easycard4By = By.id(&quot;txtEasyCard4&quot;);</span>
+<span class="nc" id="L116">        By captchaFrameBy = By.xpath(&quot;//div[@class='g-recaptcha']/div//iframe&quot;);</span>
+<span class="nc" id="L117">        By captchaBy = By.id(&quot;recaptcha-anchor&quot;);</span>
+        // 1. 驗證程序已過期，請再次勾選核取方塊以產生新的問題
+        // 2. reCAPTCHA 要求驗證.
+        // 3. 您已通過驗證
+        // rc-imageselect
+        // By captchaStatusBy = By.id(&quot;recaptcha-accessible-status&quot;);
+<span class="nc" id="L123">        By submitBy = By.xpath(&quot;//a[text()='確認送出']&quot;);</span>
+
+<span class="nc" id="L125">        new ActionComposerBuilder().prepareActionSequence()</span>
+<span class="nc" id="L126">            .prepareIfThenElse(ac -&gt; submitted.contains(card.toString())).then().custom(ac -&gt; {</span>
+<span class="nc" id="L127">              this.setResultStatus(ResultStatus.AlreadyFinished);</span>
+<span class="nc" id="L128">              ac.skipToFail();</span>
+<span class="nc" id="L129">            }).endActionSequence().endIf().getUrl(pageUrl)</span>
+<span class="nc" id="L130">            .waitUntil(ExpectedConditions.or(ExpectedConditions.textMatches(infoBy, fullPattern),</span>
+<span class="nc" id="L131">                ExpectedConditions.textMatches(infoBy, notYetOpenPattern),</span>
+<span class="nc" id="L132">                ExpectedConditions.elementToBeClickable(agreeCheckboxBy)), 30000)</span>
+<span class="nc" id="L133">            .prepareIfThenElse(ac -&gt; ExpectedConditions.elementToBeClickable(agreeCheckboxBy)</span>
+<span class="nc" id="L134">                .apply(ac.getWebDriver()))</span>
+<span class="nc" id="L135">            .then().click(agreeCheckboxBy).endActionSequence().otherwise().custom(ac -&gt; {</span>
+<span class="nc" id="L136">              ac.skipToFail();</span>
+<span class="nc" id="L137">              String info = Optional.ofNullable(ac.getWebDriver().findElement(infoBy).getText())</span>
+<span class="nc" id="L138">                  .orElse(&quot;&quot;).trim();</span>
+<span class="nc" id="L139">              this.setMessage(info);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">              if (fullPattern.matcher(info).find()) {</span>
+<span class="nc" id="L141">                this.setResultStatus(ResultStatus.Full);</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">              } else if (notYetOpenPattern.matcher(info).find()) {</span>
+<span class="nc" id="L143">                this.setResultStatus(ResultStatus.NotYetOpen);</span>
+              }
+<span class="nc" id="L145">            }).endActionSequence().endIf()</span>
+<span class="nc" id="L146">            .waitUntil(ExpectedConditions.and(</span>
+<span class="nc" id="L147">                ExpectedConditions.frameToBeAvailableAndSwitchToIt(captchaFrameBy),</span>
+<span class="nc" id="L148">                ExpectedConditions.visibilityOfElementLocated(captchaBy),</span>
+<span class="nc" id="L149">                ExpectedConditions.elementToBeClickable(captchaBy)), 1500)</span>
+<span class="nc" id="L150">            .waitUntil(ExpectedConditions.elementToBeClickable(submitBy), 1200)</span>
+<span class="nc" id="L151">            .sendKey(creditcard1By, card.getCreditcard().substring(0, 4))</span>
+<span class="nc" id="L152">            .sendKey(creditcard2By, card.getCreditcard().substring(4, 6))</span>
+<span class="nc" id="L153">            .sendKey(creditcard4By, card.getCreditcard().substring(12, 16))</span>
+<span class="nc" id="L154">            .sendKey(easycard1By, card.getEasycard().substring(0, 4))</span>
+<span class="nc" id="L155">            .sendKey(easycard2By, card.getEasycard().substring(4, 8))</span>
+<span class="nc" id="L156">            .sendKey(easycard3By, card.getEasycard().substring(8, 12))</span>
+<span class="nc" id="L157">            .sendKey(easycard4By, card.getEasycard().substring(12, 16))</span>
+<span class="nc" id="L158">            .prepareScrollToView(captchaBy, false).withInFrame(Arrays.asList(captchaFrameBy)).done()</span>
+<span class="nc" id="L159">            .prepareMouseOver(captchaBy).withInFrame(Arrays.asList(captchaFrameBy)).done()</span>
+<span class="nc" id="L160">            .waitUntil(ExpectedConditions.and(</span>
+<span class="nc" id="L161">                ExpectedConditions.frameToBeAvailableAndSwitchToIt(captchaFrameBy),</span>
+<span class="nc" id="L162">                ExpectedConditions.attributeContains(captchaBy, &quot;class&quot;,</span>
+                    &quot;recaptcha-checkbox-hover&quot;)),
+                1000)
+<span class="nc" id="L165">            .prepareClick(captchaBy).withInFrame(Arrays.asList(captchaFrameBy)).done()</span>
+<span class="nc" id="L166">            .prepareIfThenElse(ac -&gt; autoSubmit).then()</span>
+<span class="nc" id="L167">            .prepareWaitUntil(ExpectedConditions.and(</span>
+<span class="nc" id="L168">                ExpectedConditions.frameToBeAvailableAndSwitchToIt(captchaFrameBy),</span>
+<span class="nc" id="L169">                ExpectedConditions.attributeContains(captchaBy, &quot;class&quot;,</span>
+                    &quot;recaptcha-checkbox-checked&quot;),
+<span class="nc" id="L171">                ExpectedConditions.not(ExpectedConditions.attributeContains(captchaBy, &quot;class&quot;,</span>
+                    &quot;recaptcha-checkbox-hover&quot;))),
+                8000)
+<span class="nc" id="L174">            .withTimeoutCallback(ac -&gt; {</span>
+<span class="nc" id="L175">              this.setResultStatus(ResultStatus.RecaptchaChallenge);</span>
+<span class="nc" id="L176">              this.setMessage(&quot;have to try again&quot;);</span>
+<span class="nc" id="L177">              ac.skipToFail();</span>
+<span class="nc" id="L178">            }).done().click(submitBy)</span>
+<span class="nc" id="L179">            .prepareWaitUntil(ExpectedConditions.textMatches(infoBy, successPattern), 29000)</span>
+<span class="nc" id="L180">            .withTimeoutCallback(ac -&gt; {</span>
+<span class="nc" id="L181">              this.setResultStatus(ResultStatus.Submitted);</span>
+<span class="nc" id="L182">              submitted.add(card.toString());</span>
+<span class="nc" id="L183">              ac.skipToSuccess();</span>
+<span class="nc" id="L184">            }).done().custom(ac -&gt; {</span>
+<span class="nc" id="L185">              String info = Optional.ofNullable(ac.getWebDriver().findElement(infoBy).getText())</span>
+<span class="nc" id="L186">                  .orElse(&quot;&quot;).trim();</span>
+<span class="nc" id="L187">              this.setResultStatus(ResultStatus.Bingo);</span>
+<span class="nc" id="L188">              this.setMessage(info);</span>
+<span class="nc" id="L189">              submitted.add(card.toString());</span>
+<span class="nc" id="L190">              ac.skipToSuccess();</span>
+<span class="nc" id="L191">            }).endActionSequence().endIf().custom(ac -&gt; {</span>
+<span class="nc" id="L192">              controller.awaitInteraction();</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">              if (controller.getLatestInteraction() == InteractionType.POSITIVE) {</span>
+<span class="nc" id="L194">                this.setResultStatus(ResultStatus.Submitted);</span>
+<span class="nc" id="L195">                submitted.add(card.toString());</span>
+<span class="nc" id="L196">                ac.skipToSuccess();</span>
+              } else {
+<span class="nc" id="L198">                ac.skipToFail();</span>
+<span class="nc" id="L199">                this.setMessage(&quot;negative response&quot;);</span>
+              }
+<span class="nc" id="L201">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L202" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L203">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L204" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L205">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+                }
+              }
+<span class="nc bnc" id="L208" title="All 2 branches missed.">              if (Arrays.asList(ResultStatus.RecaptchaChallenge).contains(this.getResultStatus())) {</span>
+<span class="nc" id="L209">                this.setCloseWindow(false);</span>
+              }
+<span class="nc" id="L211">              logger.info(&quot;{} fail({}): {}&quot;, getName(), this.getResultStatus(), this.getMessage());</span>
+<span class="nc" id="L212">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L213">              this.setCloseWindow(false);</span>
+<span class="nc" id="L214">              logger.info(&quot;{} succeed({}): {}&quot;, getName(), this.getResultStatus(),</span>
+<span class="nc" id="L215">                  this.getMessage());</span>
+<span class="nc" id="L216">            }).build(this, this.getClass().getName() + &quot;_&quot; + postfix);</span>
+<span class="nc" id="L217">      } catch (Exception ex) {</span>
+<span class="nc" id="L218">        logger.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L219">      }</span>
+<span class="nc" id="L220">    }</span>
+
+    public ResultStatus getResultStatus() {
+<span class="nc" id="L223">      return this.resultStatus;</span>
+    }
+
+    public void setResultStatus(ResultStatus st) {
+<span class="nc" id="L227">      this.resultStatus = st;</span>
+<span class="nc" id="L228">    }</span>
+
+    public String getMessage() {
+<span class="nc" id="L231">      return message;</span>
+    }
+
+    public void setMessage(String message) {
+<span class="nc" id="L235">      this.message = message;</span>
+<span class="nc" id="L236">    }</span>
+  }
+
+<span class="nc" id="L239">  private static enum ResultStatus {</span>
+<span class="nc" id="L240">    WaitingToDo(&quot;WaitingToDo&quot;), RecaptchaChallenge(&quot;RecaptchaChallenge&quot;), Full(&quot;Full&quot;), NotYetOpen(</span>
+<span class="nc" id="L241">        &quot;NotYetOpen&quot;), Submitted(&quot;Submitted&quot;), Bingo(&quot;Bingo&quot;), AlreadyFinished(&quot;AlreadyFinished&quot;);</span>
+
+    private final String name;
+
+<span class="nc" id="L245">    private ResultStatus(String name) {</span>
+<span class="nc" id="L246">      this.name = name;</span>
+<span class="nc" id="L247">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L251">      return this.name;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

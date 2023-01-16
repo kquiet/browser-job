@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CheckExistController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.obsolete</a> &gt; <span class="el_source">CheckExistController.java</span></div><h1>CheckExistController.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.obsolete;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
+import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * CheckExistController.
+ *
+ * @author monkey
+ *
+ */
+public class CheckExistController extends JobBase {
+<span class="nc" id="L27">  private static final Logger LOGGER = LoggerFactory.getLogger(CheckExistController.class);</span>
+
+  public CheckExistController(JobConfig config) {
+<span class="nc" id="L30">    super(config);</span>
+<span class="nc" id="L31">  }</span>
+
+  @Override
+  public void run() {
+    try {
+<span class="nc" id="L36">      CheckExistCrawler bac = new CheckExistCrawler(this);</span>
+<span class="nc" id="L37">      this.submitBrowserTask(bac);</span>
+<span class="nc" id="L38">      bac.get();</span>
+<span class="nc" id="L39">      LOGGER.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L40">    } catch (Exception e) {</span>
+<span class="nc" id="L41">      LOGGER.error(&quot;generating search task error:{}&quot;, e);</span>
+<span class="nc" id="L42">    }</span>
+<span class="nc" id="L43">  }</span>
+
+  private void submitBrowserTask(CheckExistCrawler bac) {
+<span class="nc" id="L46">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L47">    LOGGER.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L48">  }</span>
+
+  private static class CheckExistCrawler extends BasicActionComposer {
+<span class="nc" id="L51">    private static final Logger LOGGER = LoggerFactory.getLogger(CheckExistCrawler.class);</span>
+
+<span class="nc" id="L53">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+    private String message;
+
+    public CheckExistCrawler(JobBase job) {
+<span class="nc" id="L57">      super();</span>
+<span class="nc" id="L58">      config(job);</span>
+<span class="nc" id="L59">    }</span>
+
+    private void config(JobBase job) {
+      try {
+        CrawlerService crawlerService =
+<span class="nc" id="L64">            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
+<span class="nc" id="L65">        String botName = job.getParameter(&quot;botName&quot;);</span>
+<span class="nc" id="L66">        Map&lt;String, String&gt; configMap = crawlerService.getBotConfig(botName);</span>
+<span class="nc" id="L67">        String checkUrl = configMap.get(&quot;checkUrl&quot;);</span>
+<span class="nc" id="L68">        String existPattern = configMap.get(&quot;existPattern&quot;);</span>
+<span class="nc" id="L69">        int timeout = Integer.parseInt(configMap.get(&quot;checkTimeout&quot;));</span>
+<span class="nc" id="L70">        String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L71">        String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+
+<span class="nc" id="L73">        new ActionComposerBuilder().prepareActionSequence().getUrl(checkUrl)</span>
+<span class="nc" id="L74">            .prepareWaitUntil(ExpectedConditions.visibilityOfElementLocated(By.xpath(existPattern)),</span>
+                timeout)
+<span class="nc" id="L76">            .withTimeoutCallback(ac -&gt; {</span>
+<span class="nc" id="L77">              this.setMessage(&quot;Not exist after checking&quot;);</span>
+<span class="nc" id="L78">              ac.skipToSuccess();</span>
+<span class="nc" id="L79">            }).done().scrollToView(By.xpath(existPattern), false).custom(ac -&gt; {</span>
+<span class="nc" id="L80">              File screenshot =</span>
+<span class="nc" id="L81">                  ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);</span>
+
+              // notify
+<span class="nc bnc" id="L84" title="All 2 branches missed.">              if (!&quot;&quot;.equals(chatId)) {</span>
+<span class="nc" id="L85">                crawlerService.notifyTelegram(chatToken, chatId, screenshot, checkUrl);</span>
+              }
+<span class="nc" id="L87">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L88" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L89">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L90" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L91">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+                }
+              }
+
+<span class="nc bnc" id="L95" title="All 2 branches missed.">              if (Arrays.asList(ResultStatus.AlertFail).contains(this.getResultStatus())) {</span>
+                // NOTHING TODO
+              }
+
+<span class="nc" id="L99">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L100">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L101">              LOGGER.info(&quot;{} succeed: {}&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L102">            }).onDone(ac -&gt; {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">              if (ac.isFail()) {</span>
+                // alert for some cases
+<span class="nc" id="L105">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
+<span class="nc bnc" id="L106" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
+<span class="nc bnc" id="L107" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
+                  // NOTHING TODO
+                }
+              }
+<span class="nc" id="L111">            }).build(this, &quot;CheckExistCrawler(&quot; + checkUrl + &quot;)&quot;);</span>
+<span class="nc" id="L112">      } catch (Exception ex) {</span>
+<span class="nc" id="L113">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L114">      }</span>
+<span class="nc" id="L115">    }</span>
+
+    public ResultStatus getResultStatus() {
+<span class="nc" id="L118">      return this.resultStatus;</span>
+    }
+
+    public void setResultStatus(ResultStatus st) {
+<span class="nc" id="L122">      this.resultStatus = st;</span>
+<span class="nc" id="L123">    }</span>
+
+    public String getMessage() {
+<span class="nc" id="L126">      return message;</span>
+    }
+
+    public void setMessage(String message) {
+<span class="nc" id="L130">      this.message = message;</span>
+<span class="nc" id="L131">    }</span>
+  }
+
+<span class="nc" id="L134">  private static enum ResultStatus {</span>
+<span class="nc" id="L135">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
+        &quot;UnknownFail&quot;);
+
+    private final String name;
+
+<span class="nc" id="L140">    private ResultStatus(String name) {</span>
+<span class="nc" id="L141">      this.name = name;</span>
+<span class="nc" id="L142">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L146">      return this.name;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

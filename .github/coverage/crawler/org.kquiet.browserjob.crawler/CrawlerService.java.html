@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CrawlerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler</a> &gt; <span class="el_source">CrawlerService.java</span></div><h1>CrawlerService.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler;
+
+import io.opentelemetry.instrumentation.annotations.SpanAttribute;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.kquiet.browserjob.crawler.dao.BotConfigRepository;
+import org.kquiet.browserjob.crawler.dao.CrawlerDao;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * Common business object.
+ *
+ * @author monkey
+ *
+ */
+<span class="fc" id="L29">public class CrawlerService {</span>
+<span class="fc" id="L30">  private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerService.class);</span>
+
+  @Autowired
+  private CrawlerDao dao;
+
+  @Autowired
+  private BotConfigRepository botConfigRepo;
+
+  @WithSpan
+  public Map&lt;String, String&gt; getBotConfig(@SpanAttribute(&quot;botName&quot;) String botName) {
+<span class="fc" id="L40">    return botConfigRepo.findByBotIdBotname(botName).stream()</span>
+<span class="fc" id="L41">        .collect(Collectors.toMap(s -&gt; s.getBotId().getKey(), s -&gt; s.getValue()));</span>
+  }
+
+  @WithSpan
+  public boolean notifyTelegram(String token, @SpanAttribute(&quot;chatId&quot;) String chatId,
+      @SpanAttribute(&quot;imageUrl&quot;) String imageUrl, @SpanAttribute(&quot;caption&quot;) String caption) {
+
+<span class="fc" id="L48">    return dao.notifyTelegram(token, chatId, imageUrl, caption);</span>
+  }
+
+  @WithSpan
+  public boolean notifyTelegram(String token, @SpanAttribute(&quot;chatId&quot;) String chatId, File photo,
+      @SpanAttribute(&quot;caption&quot;) String caption) {
+<span class="fc" id="L54">    return dao.notifyTelegram(token, chatId, photo, caption);</span>
+  }
+
+  /**
+   * take screenshot.
+   *
+   * @param webdriver webdriver
+   * @param parentPaths parent path to save screenshot file
+   * @return list of screenshot and page content files
+   */
+  @WithSpan
+  public List&lt;Path&gt; takeScreenShot(WebDriver webdriver,
+      @SpanAttribute(&quot;paths&quot;) Path... parentPaths) {
+<span class="fc" id="L67">    byte[] screenShotBytes = ((TakesScreenshot) webdriver).getScreenshotAs(OutputType.BYTES);</span>
+<span class="fc" id="L68">    byte[] pageBytes = webdriver.getPageSource().getBytes();</span>
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    Path parentPath = parentPaths.length &gt; 0 ? parentPaths[0].toAbsolutePath()</span>
+<span class="pc" id="L70">        : Path.of(&quot;&quot;, &quot;log&quot;).toAbsolutePath();</span>
+<span class="fc" id="L71">    String baseFileName =</span>
+<span class="fc" id="L72">        DateTimeFormatter.ofPattern(&quot;yyyyMMddHHmmssSSS&quot;).format(LocalDateTime.now());</span>
+<span class="fc" id="L73">    String screentShotFileName = baseFileName + &quot;.png&quot;;</span>
+<span class="fc" id="L74">    String pageFileName = baseFileName + &quot;.html&quot;;</span>
+<span class="fc" id="L75">    Path screenshotFilePath = parentPath.resolve(screentShotFileName);</span>
+<span class="fc" id="L76">    Path pageFilePath = parentPath.resolve(pageFileName);</span>
+    try {
+<span class="fc" id="L78">      Files.createDirectories(parentPath);</span>
+<span class="fc" id="L79">      Files.write(pageFilePath, pageBytes);</span>
+<span class="fc" id="L80">      Files.write(screenshotFilePath, screenShotBytes);</span>
+<span class="fc" id="L81">      LOGGER.info(&quot;takeScreentShot succeed: {}, {}&quot;, screenshotFilePath, pageFilePath);</span>
+<span class="fc" id="L82">      return List.of(screenshotFilePath, pageFilePath);</span>
+<span class="nc" id="L83">    } catch (IOException ex) {</span>
+<span class="nc" id="L84">      LOGGER.warn(String.format(&quot;takeScreenShot failed: %s, %s&quot;, screenshotFilePath, pageFilePath),</span>
+          ex);
+<span class="nc" id="L86">      return List.of();</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

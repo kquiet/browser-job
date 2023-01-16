@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CrawlerDao.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.dao</a> &gt; <span class="el_source">CrawlerDao.java</span></div><h1>CrawlerDao.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.dao;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.http.HttpClient;
+import java.net.http.HttpClient.Redirect;
+import java.net.http.HttpClient.Version;
+import java.net.http.HttpRequest;
+import java.net.http.HttpRequest.BodyPublishers;
+import java.net.http.HttpResponse;
+import java.net.http.HttpResponse.BodyHandlers;
+import java.nio.channels.Channels;
+import java.nio.channels.Pipe;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import org.apache.http.HttpEntity;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.mime.HttpMultipartMode;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.kquiet.browserjob.crawler.util.DoubleSerializer;
+import org.kquiet.browserjob.crawler.util.FloatSerializer;
+import org.kquiet.browserjob.crawler.util.SqlTimestampSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+
+/**
+ * crawler dao.
+ *
+ * @author monkey
+ *
+ */
+<span class="fc" id="L41">public class CrawlerDao {</span>
+<span class="fc" id="L42">  private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerDao.class);</span>
+
+<span class="fc" id="L44">  @Value(&quot;${BROWSERSCHEDULER_TELEGRAMAPI_SENDPHOTOURL:https://api.telegram.org/bot%s/sendPhoto}&quot;)</span>
+  private String telegramSendPhotoUrl = &quot;https://api.telegram.org/bot%s/sendPhoto&quot;;
+
+<span class="fc" id="L47">  private ObjectMapper objectMapper = getDefaultMapperForJson();</span>
+
+<span class="fc" id="L49">  private HttpClient.Builder httpClientBuilder =</span>
+<span class="fc" id="L50">      HttpClient.newBuilder().version(Version.HTTP_2).followRedirects(Redirect.NORMAL);</span>
+
+  /**
+   * notify through telegram sendPhoto api.
+   *
+   * @param token telegram bot token
+   * @param chatId telegram chat id
+   * @param imageUrl image url
+   * @param caption image caption
+   * @return api result
+   */
+  public boolean notifyTelegram(String token, String chatId, String imageUrl, String caption) {
+<span class="fc" id="L62">    String apiUrl = String.format(telegramSendPhotoUrl, token);</span>
+<span class="fc" id="L63">    Map&lt;String, Object&gt; jsonBodyParam = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L64">    jsonBodyParam.put(&quot;chat_id&quot;, chatId);</span>
+<span class="fc" id="L65">    jsonBodyParam.put(&quot;photo&quot;, imageUrl);</span>
+<span class="fc" id="L66">    jsonBodyParam.put(&quot;caption&quot;, caption);</span>
+    try {
+<span class="fc" id="L68">      HttpResult result = httpPostJson(apiUrl, jsonBodyParam);</span>
+<span class="fc" id="L69">      LOGGER.debug(&quot;notifyTelegram result:{} {}&quot;, result.getStatusCode(), result.getResponse());</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">      return result.getStatusCode() == 200;</span>
+<span class="nc" id="L71">    } catch (Exception ex) {</span>
+<span class="nc" id="L72">      LOGGER.warn(&quot;notifyTelegram fail:{}&quot;, caption, ex);</span>
+<span class="nc" id="L73">      return false;</span>
+    }
+  }
+
+  /**
+   * notify through telegram sendPhoto api.
+   *
+   * @param token telegram bot token
+   * @param chatId telegram chat id
+   * @param photo image file
+   * @param caption image caption
+   * @return api result
+   */
+  public boolean notifyTelegram(String token, String chatId, File photo, String caption) {
+<span class="fc" id="L87">    String apiUrl = String.format(telegramSendPhotoUrl, token);</span>
+    HttpEntity entity =
+<span class="fc" id="L89">        MultipartEntityBuilder.create().setMode(HttpMultipartMode.BROWSER_COMPATIBLE)</span>
+<span class="fc" id="L90">            .addBinaryBody(&quot;photo&quot;, photo, ContentType.MULTIPART_FORM_DATA, null)</span>
+<span class="fc" id="L91">            .addTextBody(&quot;chat_id&quot;, chatId).addTextBody(&quot;caption&quot;, caption).build();</span>
+
+    try {
+<span class="fc" id="L94">      HttpResult result = httpPostMultipart(apiUrl, entity);</span>
+<span class="fc" id="L95">      LOGGER.debug(&quot;notifyTelegram result:{} {}&quot;, result.getStatusCode(), result.getResponse());</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">      return result.getStatusCode() == 200;</span>
+<span class="nc" id="L97">    } catch (Exception ex) {</span>
+<span class="nc" id="L98">      LOGGER.warn(&quot;notifyTelegram fail:{}&quot;, caption, ex);</span>
+<span class="nc" id="L99">      return false;</span>
+    }
+  }
+
+  HttpResult httpPostJson(String url, Map&lt;String, Object&gt; jsonBodyParam)
+      throws URISyntaxException, IOException, InterruptedException {
+<span class="fc" id="L105">    HttpClient httpClient = httpClientBuilder.build();</span>
+<span class="fc" id="L106">    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(new URI(url)).header(&quot;Content-Type&quot;,</span>
+        &quot;application/json; charset=UTF-8&quot;);
+
+<span class="pc bpc" id="L109" title="2 of 4 branches missed.">    if (jsonBodyParam != null &amp;&amp; !jsonBodyParam.isEmpty()) {</span>
+<span class="fc" id="L110">      requestBuilder.POST(BodyPublishers.ofString(objectMapper.writeValueAsString(jsonBodyParam),</span>
+          StandardCharsets.UTF_8));
+    }
+
+<span class="fc" id="L114">    HttpResponse&lt;String&gt; resp =</span>
+<span class="fc" id="L115">        httpClient.send(requestBuilder.build(), BodyHandlers.ofString(StandardCharsets.UTF_8));</span>
+
+<span class="fc" id="L117">    return new HttpResult(resp.statusCode(), resp.body());</span>
+  }
+
+  HttpResult httpPostMultipart(String url, HttpEntity httpEntity)
+      throws URISyntaxException, IOException, InterruptedException {
+<span class="fc" id="L122">    HttpClient httpClient = httpClientBuilder.build();</span>
+<span class="fc" id="L123">    HttpRequest.Builder requestBuilder = HttpRequest.newBuilder(new URI(url)).header(&quot;Content-Type&quot;,</span>
+<span class="fc" id="L124">        httpEntity.getContentType().getValue());</span>
+
+<span class="fc" id="L126">    Pipe pipe = Pipe.open();</span>
+<span class="fc" id="L127">    CompletableFuture.runAsync(() -&gt; {</span>
+<span class="fc" id="L128">      try (OutputStream outputStream = Channels.newOutputStream(pipe.sink())) {</span>
+<span class="nc" id="L129">        httpEntity.writeTo(outputStream);</span>
+<span class="fc" id="L130">      } catch (Exception ex) {</span>
+<span class="fc" id="L131">        LOGGER.warn(&quot;httpEntity write failed&quot;, ex);</span>
+<span class="nc" id="L132">      }</span>
+<span class="fc" id="L133">    });</span>
+
+<span class="pc" id="L135">    requestBuilder.POST(BodyPublishers.ofInputStream(() -&gt; Channels.newInputStream(pipe.source())));</span>
+
+<span class="fc" id="L137">    HttpResponse&lt;String&gt; resp =</span>
+<span class="fc" id="L138">        httpClient.send(requestBuilder.build(), BodyHandlers.ofString(StandardCharsets.UTF_8));</span>
+
+<span class="fc" id="L140">    return new HttpResult(resp.statusCode(), resp.body());</span>
+  }
+
+  private ObjectMapper getDefaultMapperForJson() {
+<span class="fc" id="L144">    ObjectMapper mapper = new ObjectMapper();</span>
+<span class="fc" id="L145">    mapper.getFactory().enable(JsonGenerator.Feature.WRITE_BIGDECIMAL_AS_PLAIN);</span>
+<span class="fc" id="L146">    SimpleModule module = new SimpleModule();</span>
+<span class="fc" id="L147">    module.addSerializer(java.sql.Timestamp.class, new SqlTimestampSerializer());</span>
+<span class="fc" id="L148">    module.addSerializer(Double.class, new DoubleSerializer());</span>
+<span class="fc" id="L149">    module.addSerializer(double.class, new DoubleSerializer());</span>
+<span class="fc" id="L150">    module.addSerializer(Float.class, new FloatSerializer());</span>
+<span class="fc" id="L151">    module.addSerializer(float.class, new FloatSerializer());</span>
+<span class="fc" id="L152">    mapper.registerModule(module);</span>
+<span class="fc" id="L153">    return mapper;</span>
+  }
+
+  /**
+   * HttpResult.
+   *
+   * @author monkey
+   *
+   */
+  public class HttpResult {
+    private final int statusCode;
+    private final String response;
+
+<span class="fc" id="L166">    public HttpResult(int statusCode, String response) {</span>
+<span class="fc" id="L167">      this.statusCode = statusCode;</span>
+<span class="fc" id="L168">      this.response = response;</span>
+<span class="fc" id="L169">    }</span>
+
+    public int getStatusCode() {
+<span class="fc" id="L172">      return statusCode;</span>
+    }
+
+    public String getResponse() {
+<span class="fc" id="L176">      return response;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

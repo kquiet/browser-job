@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Pchome24hBuyController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.obsolete</a> &gt; <span class="el_source">Pchome24hBuyController.java</span></div><h1>Pchome24hBuyController.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.obsolete;
+
+import java.io.File;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Pchome24hBuyController.
+ *
+ * @author monkey
+ *
+ */
+public class Pchome24hBuyController extends JobBase {
+<span class="nc" id="L30">  private static final Logger logger = LoggerFactory.getLogger(Pchome24hBuyController.class);</span>
+
+  public Pchome24hBuyController(JobConfig config) {
+<span class="nc" id="L33">    super(config);</span>
+<span class="nc" id="L34">  }</span>
+
+  @Override
+  public void run() {
+    try {
+<span class="nc" id="L39">      Pchome24hBuyCrawler bac = new Pchome24hBuyCrawler(this);</span>
+<span class="nc" id="L40">      this.submitBrowserTask(bac);</span>
+<span class="nc" id="L41">      bac.get();</span>
+<span class="nc" id="L42">      logger.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L43">    } catch (Exception e) {</span>
+<span class="nc" id="L44">      logger.error(&quot;generating search task error:{}&quot;, e);</span>
+<span class="nc" id="L45">    }</span>
+<span class="nc" id="L46">  }</span>
+
+  private void submitBrowserTask(Pchome24hBuyCrawler bac) {
+<span class="nc" id="L49">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L50">    logger.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L51">  }</span>
+
+  private static class Pchome24hBuyCrawler extends BasicActionComposer {
+<span class="nc" id="L54">    private static final Logger LOGGER = LoggerFactory.getLogger(Pchome24hBuyCrawler.class);</span>
+<span class="nc" id="L55">    private static final Set&lt;String&gt; finishedSet = new LinkedHashSet&lt;String&gt;();</span>
+
+<span class="nc" id="L57">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+    private String message;
+
+    public Pchome24hBuyCrawler(JobBase job) {
+<span class="nc" id="L61">      super();</span>
+<span class="nc" id="L62">      config(job);</span>
+<span class="nc" id="L63">    }</span>
+
+    private void config(JobBase job) {
+      try {
+        CrawlerService crawlerService =
+<span class="nc" id="L68">            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
+<span class="nc" id="L69">        String botName = job.getParameter(&quot;botName&quot;);</span>
+<span class="nc" id="L70">        Map&lt;String, String&gt; configMap = crawlerService.getBotConfig(botName);</span>
+<span class="nc" id="L71">        String trackUrl = configMap.get(&quot;trackUrl&quot;);</span>
+<span class="nc" id="L72">        String itemId = configMap.get(&quot;itemId&quot;);</span>
+<span class="nc" id="L73">        String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L74">        String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+<span class="nc" id="L75">        boolean skipSubmit = Boolean.parseBoolean(configMap.get(&quot;skipSubmit&quot;));</span>
+<span class="nc" id="L76">        int itemBtnTimeout = Integer.parseInt(configMap.get(&quot;itemBtnTimeout&quot;));</span>
+<span class="nc" id="L77">        int cartLinkTimeout = Integer.parseInt(configMap.get(&quot;cartLinkTimeout&quot;));</span>
+<span class="nc" id="L78">        int paymentLinkTimeout = Integer.parseInt(configMap.get(&quot;paymentLinkTimeout&quot;));</span>
+<span class="nc" id="L79">        int submitLinkTimeout = Integer.parseInt(configMap.get(&quot;submitLinkTimeout&quot;));</span>
+<span class="nc" id="L80">        int orderFinishTimeout = Integer.parseInt(configMap.get(&quot;orderFinishTimeout&quot;));</span>
+<span class="nc" id="L81">        String loginAcc = job.getParameter(&quot;loginAcc&quot;);</span>
+<span class="nc" id="L82">        String loginPwd = job.getParameter(&quot;loginPwd&quot;);</span>
+
+<span class="nc" id="L84">        By itemBtnBy = By.xpath(&quot;//button[contains(@id,'&quot; + itemId + &quot;')]&quot;);</span>
+<span class="nc" id="L85">        By cartLinkBy = By.xpath(&quot;//a[contains(@class,'cart_box')]&quot;);</span>
+<span class="nc" id="L86">        By paymentLinkBy = By.xpath(&quot;//a[contains(@class,'pi_pay')]&quot;);</span>
+<span class="nc" id="L87">        By submitLinkBy = By.xpath(&quot;//a[@id='btnSubmit']&quot;);</span>
+<span class="nc" id="L88">        By orderFinishBy = By.xpath(&quot;//a[contains(@class,'gotoapp-btn')]&quot;);</span>
+
+<span class="nc" id="L90">        By loginAccBy = By.id(&quot;loginAcc&quot;);</span>
+<span class="nc" id="L91">        By loginPwdBy = By.id(&quot;loginPwd&quot;);</span>
+<span class="nc" id="L92">        By loginBtnBy = By.id(&quot;btnLogin&quot;);</span>
+
+<span class="nc" id="L94">        new ActionComposerBuilder().prepareActionSequence()</span>
+<span class="nc" id="L95">            .prepareIfThenElse(ac -&gt; finishedSet.contains(itemId)).then().custom(ac -&gt; {</span>
+<span class="nc" id="L96">              this.setResultStatus(ResultStatus.AlreadyFinished);</span>
+<span class="nc" id="L97">              ac.skipToFail();</span>
+<span class="nc" id="L98">            }).endActionSequence().endIf().getUrl(trackUrl)</span>
+<span class="nc" id="L99">            .waitUntil(ExpectedConditions.or(ExpectedConditions.elementToBeClickable(loginAccBy),</span>
+<span class="nc" id="L100">                ExpectedConditions.elementToBeClickable(itemBtnBy)), itemBtnTimeout)</span>
+<span class="nc" id="L101">            .prepareIfThenElse(</span>
+<span class="nc" id="L102">                ac -&gt; ExpectedConditions.elementToBeClickable(loginAccBy).apply(ac.getWebDriver()))</span>
+<span class="nc" id="L103">            .then().sendKey(loginAccBy, loginAcc).sendKey(loginPwdBy, loginPwd)</span>
+<span class="nc" id="L104">            .customMultiPhase(mp -&gt; ac -&gt; {</span>
+              try {
+<span class="nc" id="L106">                ac.getWebDriver().findElement(loginBtnBy).click();</span>
+<span class="nc" id="L107">                mp.noNextPhase();</span>
+<span class="nc" id="L108">              } catch (ElementClickInterceptedException ex) {</span>
+<span class="nc" id="L109">                LOGGER.info(&quot;{} login click error, retrying...&quot;, getName());</span>
+<span class="nc" id="L110">              }</span>
+<span class="nc" id="L111">            }).endActionSequence().endIf()</span>
+<span class="nc" id="L112">            .waitUntil(ExpectedConditions.elementToBeClickable(itemBtnBy), itemBtnTimeout)</span>
+<span class="nc" id="L113">            .prepareIfThenElse(ac -&gt; !ExpectedConditions</span>
+<span class="nc bnc" id="L114" title="All 2 branches missed.">                .attributeContains(itemBtnBy, &quot;class&quot;, &quot;add24hCart&quot;).apply(ac.getWebDriver()))</span>
+<span class="nc" id="L115">            .then().custom(ac -&gt; {</span>
+<span class="nc" id="L116">              this.setResultStatus(ResultStatus.NoBuyButton);</span>
+<span class="nc" id="L117">              ac.skipToFail();</span>
+<span class="nc" id="L118">            }).endActionSequence().endIf().scrollToView(itemBtnBy, false)</span>
+<span class="nc" id="L119">            .customMultiPhase(mp -&gt; ac -&gt; {</span>
+              try {
+<span class="nc" id="L121">                ac.getWebDriver().findElement(itemBtnBy).click();</span>
+<span class="nc" id="L122">                mp.noNextPhase();</span>
+<span class="nc" id="L123">              } catch (ElementClickInterceptedException ex) {</span>
+<span class="nc" id="L124">                LOGGER.info(&quot;{} item click error, retrying...&quot;, getName());</span>
+<span class="nc" id="L125">              }</span>
+<span class="nc" id="L126">            }).waitUntil(ExpectedConditions.elementToBeClickable(cartLinkBy), cartLinkTimeout)</span>
+<span class="nc" id="L127">            .scrollToView(cartLinkBy, false).customMultiPhase(mp -&gt; ac -&gt; {</span>
+              try {
+<span class="nc" id="L129">                ac.getWebDriver().findElement(cartLinkBy).click();</span>
+<span class="nc" id="L130">                mp.noNextPhase();</span>
+<span class="nc" id="L131">              } catch (ElementClickInterceptedException ex) {</span>
+<span class="nc" id="L132">                LOGGER.info(&quot;{} cart click error, retrying...&quot;, getName());</span>
+<span class="nc" id="L133">              }</span>
+<span class="nc" id="L134">            }).waitUntil(ExpectedConditions.elementToBeClickable(paymentLinkBy), paymentLinkTimeout)</span>
+<span class="nc" id="L135">            .scrollToView(paymentLinkBy, false).customMultiPhase(mp -&gt; ac -&gt; {</span>
+              try {
+<span class="nc" id="L137">                ac.getWebDriver().findElement(paymentLinkBy).click();</span>
+<span class="nc" id="L138">                mp.noNextPhase();</span>
+<span class="nc" id="L139">              } catch (ElementClickInterceptedException ex) {</span>
+<span class="nc" id="L140">                LOGGER.info(&quot;{} payment click error, retrying...&quot;, getName());</span>
+<span class="nc" id="L141">              }</span>
+<span class="nc" id="L142">            }).waitUntil(ExpectedConditions.elementToBeClickable(submitLinkBy), submitLinkTimeout)</span>
+<span class="nc" id="L143">            .scrollToView(submitLinkBy, false).customMultiPhase(mp -&gt; ac -&gt; {</span>
+              try {
+<span class="nc bnc" id="L145" title="All 2 branches missed.">                if (!skipSubmit) {</span>
+<span class="nc" id="L146">                  ac.getWebDriver().findElement(submitLinkBy).click();</span>
+<span class="nc" id="L147">                  this.setResultStatus(ResultStatus.Submitted);</span>
+                } else {
+<span class="nc" id="L149">                  ac.skipToFail();</span>
+<span class="nc" id="L150">                  LOGGER.info(&quot;{} skip submit&quot;, getName());</span>
+                }
+<span class="nc" id="L152">                mp.noNextPhase();</span>
+<span class="nc" id="L153">              } catch (ElementClickInterceptedException ex) {</span>
+<span class="nc" id="L154">                LOGGER.info(&quot;{} submit click error, retrying...&quot;, getName());</span>
+<span class="nc" id="L155">              }</span>
+<span class="nc" id="L156">            }).waitUntil(ExpectedConditions.visibilityOfElementLocated(orderFinishBy),</span>
+                orderFinishTimeout)
+<span class="nc" id="L158">            .custom(ac -&gt; {</span>
+<span class="nc" id="L159">              this.setMessage(&quot;order got!&quot;);</span>
+<span class="nc" id="L160">              this.setResultStatus(ResultStatus.Bingo);</span>
+<span class="nc" id="L161">              ac.skipToSuccess();</span>
+<span class="nc" id="L162">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">              if (Arrays.asList(ResultStatus.Submitted).contains(this.getResultStatus())) {</span>
+<span class="nc" id="L164">                this.setCloseWindow(false);</span>
+
+                // notify
+<span class="nc bnc" id="L167" title="All 2 branches missed.">                if (!&quot;&quot;.equals(chatId)) {</span>
+<span class="nc" id="L168">                  File screenshot =</span>
+<span class="nc" id="L169">                      ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);</span>
+<span class="nc" id="L170">                  crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);</span>
+                }
+              }
+
+<span class="nc bnc" id="L174" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L175">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L177">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+                }
+              }
+<span class="nc" id="L180">              LOGGER.info(&quot;{} fail({}): {}&quot;, getName(), this.getResultStatus(), this.getMessage());</span>
+<span class="nc" id="L181">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L182">              this.setCloseWindow(false);</span>
+              // notify
+<span class="nc bnc" id="L184" title="All 2 branches missed.">              if (!&quot;&quot;.equals(chatId)) {</span>
+<span class="nc" id="L185">                File screenshot =</span>
+<span class="nc" id="L186">                    ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);</span>
+<span class="nc" id="L187">                crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);</span>
+              }
+<span class="nc" id="L189">              LOGGER.info(&quot;{} succeed({}): {}&quot;, getName(), this.getResultStatus(),</span>
+<span class="nc" id="L190">                  this.getMessage());</span>
+<span class="nc" id="L191">            }).onDone(ac -&gt; {</span>
+<span class="nc" id="L192">              if (Arrays.asList(ResultStatus.Submitted, ResultStatus.Bingo)</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">                  .contains(this.getResultStatus())) {</span>
+<span class="nc" id="L194">                finishedSet.add(itemId);</span>
+              }
+<span class="nc" id="L196">            }).build(this, this.getClass().getName() + &quot;(&quot; + itemId + &quot;)&quot;);</span>
+<span class="nc" id="L197">      } catch (Exception ex) {</span>
+<span class="nc" id="L198">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L199">      }</span>
+<span class="nc" id="L200">    }</span>
+
+    public ResultStatus getResultStatus() {
+<span class="nc" id="L203">      return this.resultStatus;</span>
+    }
+
+    public void setResultStatus(ResultStatus st) {
+<span class="nc" id="L207">      this.resultStatus = st;</span>
+<span class="nc" id="L208">    }</span>
+
+    public String getMessage() {
+<span class="nc" id="L211">      return message;</span>
+    }
+
+    public void setMessage(String message) {
+<span class="nc" id="L215">      this.message = message;</span>
+<span class="nc" id="L216">    }</span>
+  }
+
+<span class="nc" id="L219">  private static enum ResultStatus {</span>
+<span class="nc" id="L220">    WaitingToDo(&quot;WaitingToDo&quot;), NoBuyButton(&quot;NoBuyButton&quot;), Submitted(&quot;Submitted&quot;), Bingo(</span>
+<span class="nc" id="L221">        &quot;Bingo&quot;), AlreadyFinished(&quot;AlreadyFinished&quot;);</span>
+
+    private final String name;
+
+<span class="nc" id="L225">    private ResultStatus(String name) {</span>
+<span class="nc" id="L226">      this.name = name;</span>
+<span class="nc" id="L227">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L231">      return this.name;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

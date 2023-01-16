@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Sale591Controller.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.house591</a> &gt; <span class="el_source">Sale591Controller.java</span></div><h1>Sale591Controller.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.house591;
+
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.metrics.LongCounter;
+import io.opentelemetry.api.metrics.Meter;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserjob.crawler.house591.entity.SaleHouse;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Sale591Controller.
+ *
+ * @author monkey
+ *
+ */
+public class Sale591Controller extends JobBase {
+<span class="nc" id="L32">  private static final Logger LOGGER = LoggerFactory.getLogger(Sale591Controller.class);</span>
+<span class="nc" id="L33">  private static final Meter METER = CrawlerBeanConfiguration.getAppContext()</span>
+<span class="nc" id="L34">      .getBean(OpenTelemetry.class).getMeter(Sale591Controller.class.getCanonicalName());</span>
+<span class="nc" id="L35">  private static final LongCounter INSTRUMENT_TELEGRAM_SENDPHOTO =</span>
+<span class="nc" id="L36">      METER.counterBuilder(&quot;new_sale_house_telegram_sendPhoto&quot;)</span>
+<span class="nc" id="L37">          .setDescription(&quot;count of succesful telegram sendPhoto api&quot;).build();</span>
+<span class="nc" id="L38">  private static final LongCounter INSTRUMENT_NEW_SALE_HOUSE =</span>
+<span class="nc" id="L39">      METER.counterBuilder(&quot;new_sale_house&quot;).setDescription(&quot;count of creation of new sale house&quot;)</span>
+<span class="nc" id="L40">          .build();</span>
+
+  public Sale591Controller(JobConfig config) {
+<span class="nc" id="L43">    super(config);</span>
+<span class="nc" id="L44">  }</span>
+
+  @Override
+  @WithSpan
+  public void run() {
+    try {
+<span class="nc" id="L50">      Sale591Crawler bac = new Sale591Crawler(this);</span>
+<span class="nc" id="L51">      this.submitBrowserTask(bac);</span>
+<span class="nc" id="L52">      bac.get();</span>
+<span class="nc" id="L53">      LOGGER.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L54">    } catch (Exception e) {</span>
+<span class="nc" id="L55">      LOGGER.error(&quot;generating search task error:{}&quot;, e);</span>
+<span class="nc" id="L56">    }</span>
+<span class="nc" id="L57">  }</span>
+
+  private void submitBrowserTask(Sale591Crawler bac) {
+<span class="nc" id="L60">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L61">    LOGGER.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L62">  }</span>
+
+  private static class Sale591Crawler extends BasicActionComposer {
+<span class="nc" id="L65">    private static final Logger LOGGER = LoggerFactory.getLogger(Sale591Crawler.class);</span>
+
+<span class="nc" id="L67">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+    private String message;
+
+    public Sale591Crawler(JobBase job) {
+<span class="nc" id="L71">      super();</span>
+<span class="nc" id="L72">      config(job);</span>
+<span class="nc" id="L73">    }</span>
+
+    private void config(JobBase job) {
+      try {
+        CrawlerService crawlerService =
+<span class="nc" id="L78">            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
+<span class="nc" id="L79">        String botName = job.getJobName();</span>
+<span class="nc" id="L80">        Map&lt;String, String&gt; configMap = crawlerService.getBotConfig(botName);</span>
+<span class="nc" id="L81">        String entryUrl = configMap.get(&quot;entryUrl&quot;);</span>
+<span class="nc" id="L82">        String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L83">        String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+<span class="nc" id="L84">        boolean takeScreentshot = Boolean.parseBoolean(job.getParameter(&quot;takeScreenshot&quot;));</span>
+
+<span class="nc" id="L86">        new ActionComposerBuilder().prepareActionSequence().getUrl(entryUrl).justWait(3000)</span>
+<span class="nc" id="L87">            .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id(&quot;j-loading&quot;)), 10000)</span>
+<span class="nc" id="L88">            .waitUntil(</span>
+<span class="nc" id="L89">                ExpectedConditions.visibilityOfAllElementsLocatedBy(By.xpath(</span>
+                    &quot;//div[contains(@class,'houseList-body')]/div[contains(@class,'j-house')]&quot;)),
+                10000)
+<span class="nc" id="L92">            .customMultiPhase(mp -&gt; ac -&gt; { // handle pop up box</span>
+              try {
+<span class="nc" id="L94">                List&lt;WebElement&gt; popBoxList = ac.getWebDriver()</span>
+<span class="nc" id="L95">                    .findElements(By.xpath(&quot;//div[contains(@class,'tips-popbox-img')]&quot;));</span>
+<span class="nc bnc" id="L96" title="All 4 branches missed.">                if (popBoxList.size() &gt; 0 &amp;&amp; popBoxList.get(0).isDisplayed()) {</span>
+<span class="nc" id="L97">                  popBoxList.get(0).click();</span>
+                }
+<span class="nc" id="L99">                mp.noNextPhase();</span>
+<span class="nc" id="L100">              } catch (Exception ex) {</span>
+<span class="nc" id="L101">                LOGGER.warn(&quot;pop up box handling failed&quot;, ex);</span>
+<span class="nc" id="L102">              }</span>
+<span class="nc" id="L103">            }).custom(ac -&gt; {</span>
+<span class="nc" id="L104">              List&lt;WebElement&gt; propertyList = ac.getWebDriver().findElements(By.xpath(</span>
+                  &quot;//div[contains(@class,'houseList-body')]/div[contains(@class,'j-house')]&quot;));
+<span class="nc" id="L106">              LOGGER.info(&quot;{} found {} properties&quot;, getName(), propertyList.size());</span>
+<span class="nc bnc" id="L107" title="All 4 branches missed.">              if (takeScreentshot &amp;&amp; propertyList.size() == 0) {</span>
+<span class="nc" id="L108">                crawlerService.takeScreenShot(ac.getWebDriver());</span>
+              }
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">              for (WebElement property : propertyList) {</span>
+                try {
+<span class="nc" id="L113">                  WebElement imageUrlE = property.findElement(</span>
+<span class="nc" id="L114">                      By.xpath(&quot;(./div[contains(@class,'houseList-item-left')]//img)[1]&quot;));</span>
+<span class="nc" id="L115">                  String imageUrl = imageUrlE.getAttribute(&quot;data-original&quot;);</span>
+
+<span class="nc" id="L117">                  List&lt;WebElement&gt; descElementList = property</span>
+<span class="nc" id="L118">                      .findElements(By.xpath(&quot;./div[contains(@class,'houseList-item-main')]/div&quot;));</span>
+<span class="nc" id="L119">                  WebElement descRootE = property</span>
+<span class="nc" id="L120">                      .findElement(By.xpath(&quot;./div[contains(@class,'houseList-item-main')]&quot;));</span>
+<span class="nc" id="L121">                  WebElement descTitleE = descRootE</span>
+<span class="nc" id="L122">                      .findElement(By.xpath(&quot;./div[contains(@class,'houseList-item-title')]&quot;));</span>
+<span class="nc" id="L123">                  List&lt;WebElement&gt; descAttributeElementList = descRootE.findElements(</span>
+<span class="nc" id="L124">                      By.xpath(&quot;./div[contains(@class,'houseList-item-attr-row')]/span&quot;));</span>
+<span class="nc" id="L125">                  List&lt;WebElement&gt; descAddressElementList = descRootE.findElements(</span>
+<span class="nc" id="L126">                      By.xpath(&quot;./div[contains(@class,'houseList-item-address-row')]/span&quot;));</span>
+<span class="nc" id="L127">                  List&lt;WebElement&gt; descUserElementList = descRootE.findElements(</span>
+<span class="nc" id="L128">                      By.xpath(&quot;./div[contains(@class,'houseList-item-user-row')]/span&quot;));</span>
+<span class="nc" id="L129">                  List&lt;WebElement&gt; descTagElementList = descRootE.findElements(</span>
+<span class="nc" id="L130">                      By.xpath(&quot;./div[contains(@class,'houseList-item-tag-row')]/div&quot;));</span>
+
+<span class="nc" id="L132">                  String description = descTitleE.getText().trim() + System.lineSeparator()</span>
+                      + descAttributeElementList
+<span class="nc" id="L134">                          .stream().map(s -&gt; s.getText().trim()).collect(Collectors.joining(&quot; &quot;))</span>
+<span class="nc" id="L135">                      + System.lineSeparator()</span>
+                      + descAddressElementList
+<span class="nc" id="L137">                          .stream().map(s -&gt; s.getText().trim()).collect(Collectors.joining(&quot; &quot;))</span>
+<span class="nc" id="L138">                      + System.lineSeparator()</span>
+<span class="nc" id="L139">                      + descUserElementList.stream().map(s -&gt; s.getText())</span>
+<span class="nc" id="L140">                          .collect(Collectors.joining(&quot;&quot;))</span>
+<span class="nc" id="L141">                      + System.lineSeparator() + descTagElementList.stream().map(s -&gt; s.getText())</span>
+<span class="nc" id="L142">                          .collect(Collectors.joining(&quot; &quot;));</span>
+
+<span class="nc" id="L144">                  String url = descElementList.get(0).findElement(By.xpath(&quot;(./a)[1]&quot;))</span>
+<span class="nc" id="L145">                      .getAttribute(&quot;href&quot;).trim();</span>
+
+<span class="nc" id="L147">                  List&lt;WebElement&gt; priceElementList = property</span>
+<span class="nc" id="L148">                      .findElements(By.xpath(&quot;./div[contains(@class,'houseList-item-right')]&quot;</span>
+                          + &quot;/div[contains(@class,'houseList-item-price')]/*[not(self::del)]&quot;));
+<span class="nc" id="L150">                  WebElement unitPriceE =</span>
+<span class="nc" id="L151">                      property.findElement(By.xpath(&quot;./div[contains(@class,'houseList-item-right')]&quot;</span>
+                          + &quot;/div[contains(@class,'houseList-item-unitprice')]&quot;));
+<span class="nc" id="L153">                  String price = priceElementList.stream().map(s -&gt; s.getText().trim())</span>
+<span class="nc" id="L154">                      .collect(Collectors.joining(&quot; &quot;)) + &quot; &quot; + unitPriceE.getText().trim();</span>
+
+                  // save for each property
+                  House591Service house591Service =
+<span class="nc" id="L158">                      CrawlerBeanConfiguration.getAppContext().getBean(House591Service.class);</span>
+<span class="nc" id="L159">                  SaleHouse toAdd = newSaleHouse(url, imageUrl, description, price, botName);</span>
+<span class="nc" id="L160">                  boolean isExist = house591Service.existsSaleHouse(toAdd.getUrl());</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                  if (!isExist) {</span>
+<span class="nc" id="L162">                    house591Service.addSaleHouse(toAdd);</span>
+<span class="nc" id="L163">                    LOGGER.info(String.format(&quot;SaleHouse:%s added&quot;, url));</span>
+<span class="nc" id="L164">                    INSTRUMENT_NEW_SALE_HOUSE.add(1L);</span>
+<span class="nc bnc" id="L165" title="All 4 branches missed.">                    if (!&quot;&quot;.equals(chatId) &amp;&amp; crawlerService.notifyTelegram(chatToken, chatId,</span>
+<span class="nc" id="L166">                        imageUrl, String.format(&quot;%s %s %s&quot;, url, description, price))) {</span>
+<span class="nc" id="L167">                      INSTRUMENT_TELEGRAM_SENDPHOTO.add(1L);</span>
+
+                      // telegram rate limit
+<span class="nc" id="L170">                      Thread.sleep(3000);</span>
+                    }
+                  }
+<span class="nc" id="L173">                } catch (Exception ex) {</span>
+<span class="nc" id="L174">                  LOGGER.warn(&quot;SaleHouse element parse error&quot;, ex);</span>
+<span class="nc" id="L175">                }</span>
+<span class="nc" id="L176">              }</span>
+<span class="nc" id="L177">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L178" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L179">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L180" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L181">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+                }
+              }
+<span class="nc" id="L184">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L185">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L186">              LOGGER.info(&quot;{} succeed:&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L187">            }).onDone(ac -&gt; {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">              if (ac.isFail()) {</span>
+                // alert for some cases
+<span class="nc" id="L190">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
+<span class="nc bnc" id="L192" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
+                  // NOTHING TODO
+                }
+              }
+<span class="nc" id="L196">            }).build(this, &quot;Sale591Crawler(&quot; + entryUrl + &quot;)&quot;);</span>
+<span class="nc" id="L197">      } catch (Exception ex) {</span>
+<span class="nc" id="L198">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L199">      }</span>
+<span class="nc" id="L200">    }</span>
+
+    private static SaleHouse newSaleHouse(String url, String imageUrl, String description,
+        String price, String maintainer) {
+<span class="nc" id="L204">      SaleHouse obj = new SaleHouse();</span>
+<span class="nc" id="L205">      obj.setUrl(url);</span>
+<span class="nc" id="L206">      obj.setSite(&quot;591&quot;);</span>
+<span class="nc" id="L207">      obj.setImageUrl(imageUrl);</span>
+<span class="nc" id="L208">      obj.setDescription(description);</span>
+<span class="nc" id="L209">      obj.setPrice(price);</span>
+<span class="nc" id="L210">      obj.setCreateuser(maintainer);</span>
+<span class="nc" id="L211">      obj.setCreatedate(LocalDateTime.now());</span>
+<span class="nc" id="L212">      return obj;</span>
+    }
+
+    public ResultStatus getResultStatus() {
+<span class="nc" id="L216">      return this.resultStatus;</span>
+    }
+
+    public String getMessage() {
+<span class="nc" id="L220">      return message;</span>
+    }
+
+    public void setMessage(String message) {
+<span class="nc" id="L224">      this.message = message;</span>
+<span class="nc" id="L225">    }</span>
+  }
+
+<span class="nc" id="L228">  private static enum ResultStatus {</span>
+<span class="nc" id="L229">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
+        &quot;UnknownFail&quot;);
+
+    private final String name;
+
+<span class="nc" id="L234">    private ResultStatus(String name) {</span>
+<span class="nc" id="L235">      this.name = name;</span>
+<span class="nc" id="L236">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L240">      return this.name;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

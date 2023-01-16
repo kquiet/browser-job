@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RailwayBookController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.obsolete</a> &gt; <span class="el_source">RailwayBookController.java</span></div><h1>RailwayBookController.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.obsolete;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
+import org.kquiet.browserscheduler.JobController.InteractionType;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * RailwayBookController.
+ *
+ * @author monkey
+ *
+ */
+public class RailwayBookController extends JobBase {
+<span class="nc" id="L28">  private static final Logger logger = LoggerFactory.getLogger(RailwayBookController.class);</span>
+
+  public RailwayBookController(JobConfig config) {
+<span class="nc" id="L31">    super(config);</span>
+<span class="nc" id="L32">  }</span>
+
+  @Override
+  public void run() {
+    try {
+<span class="nc" id="L37">      RailwayBookCrawler bac = new RailwayBookCrawler(this);</span>
+<span class="nc" id="L38">      this.submitBrowserTask(bac);</span>
+<span class="nc" id="L39">      bac.get();</span>
+<span class="nc" id="L40">      logger.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L41">    } catch (Exception e) {</span>
+<span class="nc" id="L42">      logger.error(&quot;generate crawler task error:{}&quot;, e);</span>
+<span class="nc" id="L43">    }</span>
+<span class="nc" id="L44">  }</span>
+
+  private void submitBrowserTask(RailwayBookCrawler bac) {
+<span class="nc" id="L47">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L48">    logger.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L49">  }</span>
+
+  private static class TicketOrder {
+    private final String fromStation;
+    private final String toStation;
+    private final String atDate;
+    private final String trainNo1;
+    private final String trainNo2;
+    private final String trainNo3;
+    private final String quantity;
+    private final String changeSeat;
+
+<span class="nc" id="L61">    public TicketOrder(JobBase job, int sequence) {</span>
+<span class="nc" id="L62">      fromStation = job.getParameter(&quot;fromStation_&quot; + sequence);</span>
+<span class="nc" id="L63">      toStation = job.getParameter(&quot;toStation_&quot; + sequence);</span>
+<span class="nc" id="L64">      atDate = job.getParameter(&quot;atDate_&quot; + sequence);</span>
+<span class="nc" id="L65">      trainNo1 = job.getParameter(&quot;trainNo1_&quot; + sequence);</span>
+<span class="nc" id="L66">      trainNo2 = job.getParameter(&quot;trainNo2_&quot; + sequence);</span>
+<span class="nc" id="L67">      trainNo3 = job.getParameter(&quot;trainNo3_&quot; + sequence);</span>
+<span class="nc" id="L68">      quantity = job.getParameter(&quot;quantity_&quot; + sequence);</span>
+<span class="nc" id="L69">      changeSeat = job.getParameter(&quot;changeSeat_&quot; + sequence);</span>
+<span class="nc" id="L70">    }</span>
+
+    public String getFromStation() {
+<span class="nc" id="L73">      return fromStation;</span>
+    }
+
+    public String getToStation() {
+<span class="nc" id="L77">      return toStation;</span>
+    }
+
+    public String getAtDate() {
+<span class="nc" id="L81">      return atDate;</span>
+    }
+
+    public String getTrainNo1() {
+<span class="nc" id="L85">      return trainNo1;</span>
+    }
+
+    public String getTrainNo2() {
+<span class="nc" id="L89">      return trainNo2;</span>
+    }
+
+    public String getTrainNo3() {
+<span class="nc" id="L93">      return trainNo3;</span>
+    }
+
+    public String getQuantity() {
+<span class="nc" id="L97">      return quantity;</span>
+    }
+
+    public String getChangeSeat() {
+<span class="nc" id="L101">      return changeSeat;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L106">      return String.join(&quot;+&quot;, fromStation, toStation, atDate, trainNo1, trainNo2, trainNo3,</span>
+          quantity, changeSeat);
+    }
+  }
+
+  private static class RailwayBookCrawler extends BasicActionComposer {
+<span class="nc" id="L112">    private static final Logger logger = LoggerFactory.getLogger(RailwayBookCrawler.class);</span>
+<span class="nc" id="L113">    private static Set&lt;String&gt; submitted =</span>
+<span class="nc" id="L114">        Collections.newSetFromMap(new ConcurrentHashMap&lt;String, Boolean&gt;());</span>
+
+<span class="nc" id="L116">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+    private String message;
+
+    public RailwayBookCrawler(RailwayBookController controller) {
+<span class="nc" id="L120">      super();</span>
+<span class="nc" id="L121">      config(controller);</span>
+<span class="nc" id="L122">    }</span>
+
+    private void config(RailwayBookController controller) {
+      try {
+<span class="nc" id="L126">        boolean autoSubmit = Boolean.parseBoolean(controller.getParameter(&quot;autoSubmit&quot;));</span>
+<span class="nc" id="L127">        int orderCount = Integer.parseInt(controller.getParameter(&quot;orderCount&quot;));</span>
+<span class="nc" id="L128">        List&lt;TicketOrder&gt; orderList = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        for (int i = 0; i &lt; orderCount; i++) {</span>
+<span class="nc" id="L130">          orderList.add(new TicketOrder(controller, i + 1));</span>
+        }
+
+<span class="nc" id="L133">        String pid = controller.getParameter(&quot;pid&quot;);</span>
+        String pageUrl = &quot;https://www.railway.gov.tw/tra-tip-web/tip/tip001/tip122/trip&quot;
+<span class="nc bnc" id="L135" title="All 2 branches missed.">            + (orderCount &gt;= 2 ? &quot;Two&quot; : &quot;One&quot;) + &quot;/byTrainNo&quot;;</span>
+<span class="nc" id="L136">        By pidBy = By.xpath(&quot;//input[@name='pid']&quot;);</span>
+<span class="nc" id="L137">        By captchaFrameBy = By.xpath(&quot;//div[@class='g-recaptcha']/div//iframe&quot;);</span>
+<span class="nc" id="L138">        By captchaBy = By.id(&quot;recaptcha-anchor&quot;);</span>
+<span class="nc" id="L139">        Function&lt;Integer, By&gt; fromStationByMaker =</span>
+<span class="nc" id="L140">            (seq) -&gt; By.xpath(&quot;(//select[contains(@name,'startStation')])[&quot; + seq + &quot;]&quot;);</span>
+<span class="nc" id="L141">        Function&lt;Integer, By&gt; toStationByMaker =</span>
+<span class="nc" id="L142">            (seq) -&gt; By.xpath(&quot;(//select[contains(@name,'endStation')])[&quot; + seq + &quot;]&quot;);</span>
+<span class="nc" id="L143">        Function&lt;Integer, By&gt; atDateByMaker =</span>
+<span class="nc" id="L144">            (seq) -&gt; By.xpath(&quot;(//select[contains(@name,'rideDate')])[&quot; + seq + &quot;]&quot;);</span>
+<span class="nc" id="L145">        BiFunction&lt;Integer, Integer, By&gt; trainNoByMaker = (trainNo, seq) -&gt; By</span>
+<span class="nc" id="L146">            .xpath(&quot;(//input[contains(@name,'trainNoList[&quot; + trainNo + &quot;]')])[&quot; + seq + &quot;]&quot;);</span>
+<span class="nc" id="L147">        Function&lt;Integer, By&gt; quantityByMaker =</span>
+<span class="nc" id="L148">            (seq) -&gt; By.xpath(&quot;(//select[contains(@name,'normalQty')])[&quot; + seq + &quot;]&quot;);</span>
+<span class="nc" id="L149">        Function&lt;Integer, By&gt; changeSeatByMaker =</span>
+<span class="nc" id="L150">            (seq) -&gt; By.xpath(&quot;(//select[contains(@name,'chgSeat')])[&quot; + seq + &quot;]&quot;);</span>
+<span class="nc" id="L151">        BiFunction&lt;Integer, String, By&gt; atDateOptionByMaker = (seq, option) -&gt; By.xpath(</span>
+            &quot;(//select[contains(@name,'rideDate')])[&quot; + seq + &quot;]/option[@value='&quot; + option + &quot;']&quot;);
+        // 1. 驗證程序已過期，請再次勾選核取方塊以產生新的問題
+        // 2. reCAPTCHA 要求驗證.
+        // 3. 您已通過驗證
+        // rc-imageselect
+<span class="nc" id="L157">        By submitBy = By.id(&quot;submitBtn&quot;);</span>
+
+<span class="nc" id="L159">        new ActionComposerBuilder().prepareActionSequence()</span>
+<span class="nc" id="L160">            .prepareIfThenElse(ac -&gt; submitted.contains(orderList.toString())).then().custom(ac -&gt; {</span>
+<span class="nc" id="L161">              this.setResultStatus(ResultStatus.AlreadyFinished);</span>
+<span class="nc" id="L162">              ac.skipToFail();</span>
+<span class="nc" id="L163">            }).endActionSequence().endIf().getUrl(pageUrl)</span>
+<span class="nc" id="L164">            .waitUntil(ExpectedConditions.and(ExpectedConditions.elementToBeClickable(submitBy),</span>
+<span class="nc" id="L165">                ExpectedConditions.frameToBeAvailableAndSwitchToIt(captchaFrameBy),</span>
+<span class="nc" id="L166">                ExpectedConditions.visibilityOfElementLocated(captchaBy),</span>
+<span class="nc" id="L167">                ExpectedConditions.elementToBeClickable(captchaBy)), 4000)</span>
+<span class="nc" id="L168">            .prepareIfThenElse(ac -&gt; ExpectedConditions</span>
+<span class="nc" id="L169">                .numberOfElementsToBe(atDateOptionByMaker.apply(1, orderList.get(0).getAtDate()), 0)</span>
+<span class="nc" id="L170">                .apply(ac.getWebDriver()))</span>
+<span class="nc" id="L171">            .then().custom(ac -&gt; {</span>
+<span class="nc" id="L172">              ac.skipToFail();</span>
+<span class="nc" id="L173">              this.setResultStatus(ResultStatus.DateNotAvailable);</span>
+<span class="nc" id="L174">              this.setMessage(orderList.get(0).getAtDate());</span>
+<span class="nc" id="L175">            }).endActionSequence().endIf()</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">            .prepareIfThenElse(ac -&gt; orderCount &gt;= 2 &amp;&amp; ExpectedConditions</span>
+<span class="nc" id="L177">                .and(ExpectedConditions.numberOfElementsToBe(</span>
+<span class="nc" id="L178">                    atDateOptionByMaker.apply(2, orderList.get(1).getAtDate()), 0))</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                .apply(ac.getWebDriver()))</span>
+<span class="nc" id="L180">            .then().custom(ac -&gt; {</span>
+<span class="nc" id="L181">              ac.skipToFail();</span>
+<span class="nc" id="L182">              this.setResultStatus(ResultStatus.DateNotAvailable);</span>
+<span class="nc" id="L183">              this.setMessage(orderList.get(1).getAtDate());</span>
+<span class="nc" id="L184">            }).endActionSequence().endIf().sendKey(pidBy, pid)</span>
+<span class="nc" id="L185">            .selectByValue(fromStationByMaker.apply(1), orderList.get(0).getFromStation())</span>
+<span class="nc" id="L186">            .selectByValue(toStationByMaker.apply(1), orderList.get(0).getToStation())</span>
+<span class="nc" id="L187">            .selectByValue(atDateByMaker.apply(1), orderList.get(0).getAtDate())</span>
+<span class="nc" id="L188">            .sendKey(trainNoByMaker.apply(0, 1), orderList.get(0).getTrainNo1())</span>
+<span class="nc" id="L189">            .sendKey(trainNoByMaker.apply(1, 1), orderList.get(0).getTrainNo2())</span>
+<span class="nc" id="L190">            .sendKey(trainNoByMaker.apply(2, 1), orderList.get(0).getTrainNo3())</span>
+<span class="nc" id="L191">            .selectByValue(quantityByMaker.apply(1), orderList.get(0).getQuantity())</span>
+<span class="nc" id="L192">            .selectByValue(changeSeatByMaker.apply(1), orderList.get(0).getChangeSeat())</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">            .prepareIfThenElse(ac -&gt; orderCount &gt;= 2).then()</span>
+<span class="nc" id="L194">            .selectByValue(fromStationByMaker.apply(2), orderList.get(1).getFromStation())</span>
+<span class="nc" id="L195">            .selectByValue(toStationByMaker.apply(2), orderList.get(1).getToStation())</span>
+<span class="nc" id="L196">            .selectByValue(atDateByMaker.apply(2), orderList.get(1).getAtDate())</span>
+<span class="nc" id="L197">            .sendKey(trainNoByMaker.apply(0, 2), orderList.get(1).getTrainNo1())</span>
+<span class="nc" id="L198">            .sendKey(trainNoByMaker.apply(1, 2), orderList.get(1).getTrainNo2())</span>
+<span class="nc" id="L199">            .sendKey(trainNoByMaker.apply(2, 2), orderList.get(1).getTrainNo3())</span>
+<span class="nc" id="L200">            .selectByValue(quantityByMaker.apply(2), orderList.get(1).getQuantity())</span>
+<span class="nc" id="L201">            .selectByValue(changeSeatByMaker.apply(2), orderList.get(1).getChangeSeat())</span>
+<span class="nc" id="L202">            .endActionSequence().endIf().prepareScrollToView(captchaBy, false)</span>
+<span class="nc" id="L203">            .withInFrame(Arrays.asList(captchaFrameBy)).done().prepareMouseOver(captchaBy)</span>
+<span class="nc" id="L204">            .withInFrame(Arrays.asList(captchaFrameBy)).done()</span>
+<span class="nc" id="L205">            .waitUntil(ExpectedConditions.and(</span>
+<span class="nc" id="L206">                ExpectedConditions.frameToBeAvailableAndSwitchToIt(captchaFrameBy),</span>
+<span class="nc" id="L207">                ExpectedConditions.attributeContains(captchaBy, &quot;class&quot;,</span>
+                    &quot;recaptcha-checkbox-hover&quot;)),
+                1000)
+<span class="nc" id="L210">            .prepareClick(captchaBy).withInFrame(Arrays.asList(captchaFrameBy)).done()</span>
+<span class="nc" id="L211">            .prepareIfThenElse(ac -&gt; autoSubmit).then()</span>
+<span class="nc" id="L212">            .prepareWaitUntil(ExpectedConditions.and(</span>
+<span class="nc" id="L213">                ExpectedConditions.frameToBeAvailableAndSwitchToIt(captchaFrameBy),</span>
+<span class="nc" id="L214">                ExpectedConditions.attributeContains(captchaBy, &quot;class&quot;,</span>
+                    &quot;recaptcha-checkbox-checked&quot;),
+<span class="nc" id="L216">                ExpectedConditions.not(ExpectedConditions.attributeContains(captchaBy, &quot;class&quot;,</span>
+                    &quot;recaptcha-checkbox-hover&quot;))),
+                5000)
+<span class="nc" id="L219">            .withTimeoutCallback(ac -&gt; {</span>
+<span class="nc" id="L220">              this.setResultStatus(ResultStatus.RecaptchaChallenge);</span>
+<span class="nc" id="L221">              this.setMessage(&quot;have to try again&quot;);</span>
+<span class="nc" id="L222">              ac.skipToFail();</span>
+<span class="nc" id="L223">              submitted.add(orderList.toString());</span>
+<span class="nc" id="L224">            }).done().click(submitBy).custom(ac -&gt; {</span>
+<span class="nc" id="L225">              this.setResultStatus(ResultStatus.Submitted);</span>
+<span class="nc" id="L226">              submitted.add(orderList.toString());</span>
+<span class="nc" id="L227">              ac.skipToSuccess();</span>
+<span class="nc" id="L228">            }).endActionSequence().endIf().custom(ac -&gt; {</span>
+<span class="nc" id="L229">              controller.awaitInteraction();</span>
+<span class="nc bnc" id="L230" title="All 2 branches missed.">              if (controller.getLatestInteraction() == InteractionType.POSITIVE) {</span>
+<span class="nc" id="L231">                this.setResultStatus(ResultStatus.Submitted);</span>
+<span class="nc" id="L232">                submitted.add(orderList.toString());</span>
+<span class="nc" id="L233">                ac.skipToSuccess();</span>
+              } else {
+<span class="nc" id="L235">                ac.skipToFail();</span>
+<span class="nc" id="L236">                this.setMessage(&quot;negative response&quot;);</span>
+              }
+<span class="nc" id="L238">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L239" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L240">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L241" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L242">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+                }
+              }
+<span class="nc bnc" id="L245" title="All 2 branches missed.">              if (Arrays.asList(ResultStatus.RecaptchaChallenge).contains(this.getResultStatus())) {</span>
+<span class="nc" id="L246">                this.setCloseWindow(false);</span>
+              }
+<span class="nc" id="L248">              logger.info(&quot;{} fail({}): {}&quot;, getName(), this.getResultStatus(), this.getMessage());</span>
+<span class="nc" id="L249">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L250">              this.setCloseWindow(false);</span>
+<span class="nc" id="L251">              logger.info(&quot;{} succeed({}): {}&quot;, getName(), this.getResultStatus(),</span>
+<span class="nc" id="L252">                  this.getMessage());</span>
+<span class="nc" id="L253">            }).build(this, this.getClass().getName());</span>
+<span class="nc" id="L254">      } catch (Exception ex) {</span>
+<span class="nc" id="L255">        logger.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L256">      }</span>
+<span class="nc" id="L257">    }</span>
+
+    public ResultStatus getResultStatus() {
+<span class="nc" id="L260">      return this.resultStatus;</span>
+    }
+
+    public void setResultStatus(ResultStatus st) {
+<span class="nc" id="L264">      this.resultStatus = st;</span>
+<span class="nc" id="L265">    }</span>
+
+    public String getMessage() {
+<span class="nc" id="L268">      return message;</span>
+    }
+
+    public void setMessage(String message) {
+<span class="nc" id="L272">      this.message = message;</span>
+<span class="nc" id="L273">    }</span>
+  }
+
+<span class="nc" id="L276">  private static enum ResultStatus {</span>
+<span class="nc" id="L277">    WaitingToDo(&quot;WaitingToDo&quot;), DateNotAvailable(&quot;DateNotAvailable&quot;), RecaptchaChallenge(</span>
+<span class="nc" id="L278">        &quot;RecaptchaChallenge&quot;), Submitted(</span>
+<span class="nc" id="L279">            &quot;Submitted&quot;), Bingo(&quot;Bingo&quot;), AlreadyFinished(&quot;AlreadyFinished&quot;);</span>
+
+    private final String name;
+
+<span class="nc" id="L283">    private ResultStatus(String name) {</span>
+<span class="nc" id="L284">      this.name = name;</span>
+<span class="nc" id="L285">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L289">      return this.name;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
