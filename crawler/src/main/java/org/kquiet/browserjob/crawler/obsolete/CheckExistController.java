@@ -82,7 +82,7 @@ public class CheckExistController extends JobBase {
 
               // notify
               if (!"".equals(chatId)) {
-                crawlerService.notifyTelegram(chatToken, chatId, screenshot, checkUrl);
+                crawlerService.telegramSendPhoto(chatId, chatToken, checkUrl, screenshot);
               }
             }).returnToComposerBuilder().onFail(ac -> {
               if (this.getMessage() == null || "".equals(this.getMessage())) {

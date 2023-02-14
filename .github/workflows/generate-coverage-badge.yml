@@ -3,9 +3,6 @@ on:
   workflow_dispatch:
   workflow_call:
     inputs:
-      ref:
-        required: true
-        type: string
       module:
         required: true
         type: string
@@ -23,7 +20,7 @@ jobs:
     - name: Download JaCoCo coverage report
       uses: actions/download-artifact@v3
       with:
-        name: jacoco-report-${{ inputs.ref }}
+        name: jacoco-report
         path: .github/coverage/${{ inputs.module }}
     - name: Generate JaCoCo Badges
       uses: cicirello/jacoco-badge-generator@v2

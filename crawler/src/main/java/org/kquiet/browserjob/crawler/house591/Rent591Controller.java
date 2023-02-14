@@ -1,8 +1,6 @@
 package org.kquiet.browserjob.crawler.house591;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -29,14 +27,6 @@ import org.slf4j.LoggerFactory;
  */
 public class Rent591Controller extends JobBase {
   private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Controller.class);
-  private static final Meter METER = CrawlerBeanConfiguration.getAppContext()
-      .getBean(OpenTelemetry.class).getMeter(Sale591Controller.class.getCanonicalName());
-  private static final LongCounter INSTRUMENT_TELEGRAM_SENDPHOTO =
-      METER.counterBuilder("new_rent_house_telegram_sendPhoto")
-          .setDescription("count of succesful telegram sendPhoto api").build();
-  private static final LongCounter INSTRUMENT_NEW_RENT_HOUSE =
-      METER.counterBuilder("new_rent_house").setDescription("count of creation of new rent house")
-          .build();
 
   public Rent591Controller(JobConfig config) {
     super(config);
@@ -117,10 +107,15 @@ public class Rent591Controller extends JobBase {
                   if (!isExist) {
                     house591Service.addRentHouse(toAdd);
                     LOGGER.info(String.format("RentHouse:%s added", url));
-                    INSTRUMENT_NEW_RENT_HOUSE.add(1L);
-                    if (!"".equals(chatId) && crawlerService.notifyTelegram(chatToken, chatId,
-                        imageUrl, String.format("%s %s %s", url, description, price))) {
-                      INSTRUMENT_TELEGRAM_SENDPHOTO.add(1L);
+                    MeterRegistry meterRegistry =
+                        CrawlerBeanConfiguration.getAppContext().getBean(MeterRegistry.class);
+                    meterRegistry.counter("new_rent_house").increment();
+                    if (!"".equals(chatId)
+                        && crawlerService
+                            .telegramSendPhoto(chatId, chatToken,
+                                String.format("%s %s %s", url, description, price), imageUrl)
+                            .block()) {
+                      meterRegistry.counter("new_rent_house.telegram_sendPhoto").increment();
 
                       // telegram rate limit
                       Thread.sleep(3000);

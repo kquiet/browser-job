@@ -8,14 +8,14 @@ spring:
     enabled: true
     cleanDisabled: false
     locations: classpath:db/migration
-    url: ${browser-scheduler.dataSource.jdbcUrl}
-    user: ${browser-scheduler.dataSource.username}
-    password: ${browser-scheduler.dataSource.password}
+    url: ${crawler.dataSource.jdbcUrl}
+    user: ${crawler.dataSource.username}
+    password: ${crawler.dataSource.password}
   security:
     user:
       name: user
 server:
-  port: 26026
+  port: 8080
 management:
   endpoints:
     enabled-by-default: true
@@ -32,13 +32,16 @@ management:
       show-values: when-authorized
     shutdown:
       enabled: false
-
-browser-scheduler:
+crawler:
   dataSource:
     driverClassName: "com.mysql.cj.jdbc.Driver"
-    jdbcUrl: "jdbc:mysql://${crawler.mysqlIp}:${crawler.mysqlPort}/${crawler.mysqlDb}?useUnicode=yes&characterEncoding=UTF-8&connectTimeout=10000&socketTimeout=10000"
-    username: "${crawler.mysqlUserName}"
-    password: "${crawler.mysqlPassword}"
+    jdbcUrl: "jdbc:mysql://${crawler_mysql_host}:${crawler_mysql_port}/${crawler_mysql_db}?useUnicode=yes&characterEncoding=UTF-8&connectTimeout=10000&socketTimeout=10000"
+    username: "${crawler_mysql_username}"
+    password: "${crawler_mysql_password}"
+  hecate:
+    endpoints:
+      telegramSendPhoto: "http://localhost:8080/telegram/sendPhoto"
+browser-scheduler:
   instanceName: CrawlerTest
   gui:
     enable: false

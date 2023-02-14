@@ -167,7 +167,7 @@ public class Pchome24hBuyController extends JobBase {
                 if (!"".equals(chatId)) {
                   File screenshot =
                       ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);
-                  crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);
+                  crawlerService.telegramSendPhoto(chatId, chatToken, itemId, screenshot);
                 }
               }
 
@@ -184,7 +184,7 @@ public class Pchome24hBuyController extends JobBase {
               if (!"".equals(chatId)) {
                 File screenshot =
                     ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);
-                crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);
+                crawlerService.telegramSendPhoto(chatId, chatToken, itemId, screenshot);
               }
               LOGGER.info("{} succeed({}): {}", getName(), this.getResultStatus(),
                   this.getMessage());

@@ -25,13 +25,12 @@ jobs:
     if: github.ref_type == 'branch' && github.ref_name == 'dev'
     uses: ./.github/workflows/generate-coverage-badge.yml
     with:
-      ref: ${{ github.sha }}
       module: crawler
   dockerhub-deploy-snapshot:
     if: github.ref_type == 'branch' && github.ref_name == 'dev'
     needs:
-    - generate-coverage-badge
     - call-maven-test
+    - generate-coverage-badge
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-snapshot-${{ github.sha }}
