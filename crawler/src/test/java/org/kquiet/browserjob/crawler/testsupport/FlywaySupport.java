@@ -19,7 +19,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 @ExtendWith({FlywaySupportExtension.class})
 public @interface FlywaySupport {
   /**
-   * Clean before each method.
+   * Clean after each method.
    */
-  boolean cleanBeforeEach() default false;
+  boolean cleanAfterEach() default false;
 }

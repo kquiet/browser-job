@@ -1,10 +1,13 @@
 package org.kquiet.browserjob.crawler;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.sql.SQLException;
 import java.util.List;
-import org.junit.jupiter.api.AfterAll;
+import javax.sql.DataSource;
+import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -33,17 +36,23 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 @EnableConfigurationProperties
 @EnableAutoConfiguration
 @DirtiesContext
-@FlywaySupport(cleanBeforeEach = true)
+@FlywaySupport()
 @Testcontainers(disabledWithoutDocker = true)
 public class CrawlerIntegrationTest {
-  private static final String PROPERTY_DATABASE_URL = "browser-scheduler.dataSource.jdbcUrl";
-  private static final String PROPERTY_DATABASE_USERNAME = "browser-scheduler.dataSource.username";
-  private static final String PROPERTY_DATABASE_PASSWORD = "browser-scheduler.dataSource.password";
-  private static final String JDBC_DATABASE_IMAGE = "mysql:8.0.31";
+  private static final String PROPERTY_DATABASE_URL = "crawler.dataSource.jdbcUrl";
+  private static final String PROPERTY_DATABASE_USERNAME = "crawler.dataSource.username";
+  private static final String PROPERTY_DATABASE_PASSWORD = "crawler.dataSource.password";
+  private static final String JDBC_DATABASE_IMAGE = "mysql:8.0.32";
 
   @Container
   private static JdbcDatabaseContainer<?> JDBC_DATABASE_CONTAINER =
       new MySQLContainer<>(JDBC_DATABASE_IMAGE);
+
+  @Autowired
+  DataSource dataSource;
+
+  @Autowired
+  Flyway flyway;
 
   @Autowired
   private BotConfigRepository botConfigRepository;
@@ -55,11 +64,15 @@ public class CrawlerIntegrationTest {
     System.setProperty(PROPERTY_DATABASE_PASSWORD, JDBC_DATABASE_CONTAINER.getPassword());
   }
 
-  @AfterAll
-  static void afterAll() {
-    System.clearProperty(PROPERTY_DATABASE_URL);
-    System.clearProperty(PROPERTY_DATABASE_USERNAME);
-    System.clearProperty(PROPERTY_DATABASE_PASSWORD);
+  @BeforeEach
+  void beforeEach() throws SQLException {
+    String dataSourceUrl = dataSource.getConnection().getMetaData().getURL();
+    String flywayUrl =
+        flyway.getConfiguration().getDataSource().getConnection().getMetaData().getURL();
+    String expected = JDBC_DATABASE_CONTAINER.getJdbcUrl();
+
+    assertEquals(expected, dataSourceUrl);
+    assertEquals(expected, flywayUrl);
   }
 
   @ParameterizedTest()
@@ -88,6 +101,10 @@ public class CrawlerIntegrationTest {
 
     botConfigRepository.saveAndFlush(botConfig);
     assertEquals(1, botConfigRepository.findByBotIdBotname(botId.getBotname()).size());
+
+    // clean
+    flyway.clean();
+    flyway.migrate();
   }
 
   @Test

@@ -10,15 +10,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.kquiet.browserjob.crawler.dao.BotConfigRepository;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
+import org.kquiet.hecate.api.telegram.SendPhotoRequest;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Mono;
 
 /**
  * Common business object.
@@ -41,17 +44,50 @@ public class CrawlerService {
         .collect(Collectors.toMap(s -> s.getBotId().getKey(), s -> s.getValue()));
   }
 
+  /**
+   * Send message with photo url through telegram.
+   *
+   * @param chatId telegram chat id
+   * @param token telegram bot token
+   * @param caption message caption
+   * @param photo photo url
+   * @return whether messsage is sent
+   */
   @WithSpan
-  public boolean notifyTelegram(String token, @SpanAttribute("chatId") String chatId,
-      @SpanAttribute("imageUrl") String imageUrl, @SpanAttribute("caption") String caption) {
+  public Mono<Boolean> telegramSendPhoto(@SpanAttribute("chatId") String chatId,
+      @SpanAttribute("token") String token, @SpanAttribute("caption") String caption,
+      @SpanAttribute("photo") String photo) {
 
-    return dao.notifyTelegram(token, chatId, imageUrl, caption);
+    return dao.telegramSendPhoto(createSendPhotoRequest(chatId, token, caption, photo),
+        Optional.empty());
   }
 
+  /**
+   * Send message with photo url through telegram.
+   *
+   * @param chatId telegram chat id
+   * @param token telegram bot token
+   * @param caption message caption
+   * @param photoFile photo file
+   * @return whether messsage is sent
+   */
   @WithSpan
-  public boolean notifyTelegram(String token, @SpanAttribute("chatId") String chatId, File photo,
-      @SpanAttribute("caption") String caption) {
-    return dao.notifyTelegram(token, chatId, photo, caption);
+  public Mono<Boolean> telegramSendPhoto(@SpanAttribute("chatId") String chatId,
+      @SpanAttribute("token") String token, @SpanAttribute("caption") String caption,
+      @SpanAttribute("photoFile") File photoFile) {
+
+    return dao.telegramSendPhoto(createSendPhotoRequest(chatId, token, caption, null),
+        Optional.of(photoFile));
+  }
+
+  private SendPhotoRequest createSendPhotoRequest(String chatId, String token, String caption,
+      String photo) {
+    SendPhotoRequest obj = new SendPhotoRequest();
+    obj.setChatId(chatId);
+    obj.setCaption(caption);
+    obj.setToken(token);
+    obj.setPhoto(photo);
+    return obj;
   }
 
   /**

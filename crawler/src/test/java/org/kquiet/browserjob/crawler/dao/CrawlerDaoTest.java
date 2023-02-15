@@ -1,54 +1,99 @@
 package org.kquiet.browserjob.crawler.dao;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.Answers;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.kquiet.hecate.api.telegram.SendPhotoRequest;
 import org.mockito.junit.jupiter.MockitoExtension;
+import reactor.test.StepVerifier;
+import reactor.test.StepVerifier.FirstStep;
 
 @ExtendWith(MockitoExtension.class)
 class CrawlerDaoTest {
-  @Mock
-  HttpResponse<String> response;
+  private static MockWebServer mockWebServer;
 
-  @Mock(answer = Answers.RETURNS_DEEP_STUBS)
-  HttpClient.Builder httpClientBuilder;
+  @TempDir
+  static Path tempDir;
 
-  @InjectMocks
-  CrawlerDao daoObj;
+  private CrawlerDao daoObj = new CrawlerDao();
 
-  @ParameterizedTest()
-  @CsvSource({"token1, chatId1, imageUrl1, caption1"})
-  void notifyTelegramTest(String token, String chatId, String imageUrl, String caption)
-      throws IOException, InterruptedException {
-    mockTelegramHttpCallChain();
+  @BeforeAll
+  static void setUp() throws IOException {
+    mockWebServer = new MockWebServer();
+    mockWebServer.start();
+  }
 
-    assertEquals(true, daoObj.notifyTelegram(token, chatId, imageUrl, caption));
+  @AfterAll
+  static void tearDown() throws IOException {
+    mockWebServer.shutdown();
   }
 
   @ParameterizedTest()
-  @CsvSource({"token1, chatId1, photoPath1, caption1"})
-  void notifyTelegramTest(String token, String chatId, File photo, String caption)
-      throws IOException, InterruptedException {
-    mockTelegramHttpCallChain();
+  @CsvSource({
+      "-123456789, 987654321:XXXXXXX, test11, https://localhost/path/to/sendPhotoTest.jpg, ",
+      "-234567890, 098765432:YYYYY, test12, , sendPhotoTest.png"})
+  void telegramSendPhotoTest(String chatId, String token, String caption, String photo,
+      String photoFileName) throws IOException, InterruptedException {
+    String sendPhotoUrl = mockWebServer.url("/telegram/sendPhoto").toString();
+    daoObj.setTelegramSendPhotoUrl(sendPhotoUrl);
+    mockWebServer.enqueue(new MockResponse().setResponseCode(200)
+        .setHeader("Content-Type", "application/json").setBody("true"));
 
-    assertEquals(true, daoObj.notifyTelegram(token, chatId, photo, caption));
-  }
+    SendPhotoRequest req = new SendPhotoRequest();
+    req.setChatId(chatId);
+    req.setToken(token);
+    req.setCaption(caption);
+    req.setPhoto(photo);
 
-  private void mockTelegramHttpCallChain() throws IOException, InterruptedException {
-    when(httpClientBuilder.build().send(Mockito.<HttpRequest>any(),
-        Mockito.<HttpResponse.BodyHandler<String>>any())).thenReturn(response);
-    when(response.statusCode()).thenReturn(200);
+    FirstStep<Boolean> firstStep;
+    if (photo != null && !photo.isBlank()) {
+      firstStep = StepVerifier.create(daoObj.telegramSendPhoto(req, Optional.empty()));
+    } else {
+      firstStep = StepVerifier.create(daoObj.telegramSendPhoto(req,
+          Optional.of(Files.createFile(tempDir.resolve(photoFileName)).toFile())));
+    }
+    firstStep.assertNext(s -> assertEquals(true, s)).verifyComplete();
+
+    // assert request
+    RecordedRequest request = mockWebServer.takeRequest();
+    assertEquals("POST", request.getMethod());
+    assertEquals(sendPhotoUrl, request.getRequestUrl().toString());
+    assertEquals(0, request.getHeader("Content-Type").indexOf("multipart/form-data;boundary="));
+
+    String requestBody = request.getBody().readUtf8().replaceAll("\r\n", System.lineSeparator());
+    String chatIdBody = String.format("\"chatId\":\"%s\"", req.getChatId());
+    assertEquals(true, requestBody.indexOf(chatIdBody) > 0);
+    String tokenBody = String.format("\"token\":\"%s\"", req.getToken());
+    assertEquals(true, requestBody.indexOf(tokenBody) > 0);
+    String captionBody = String.format("\"caption\":\"%s\"", req.getCaption());
+    assertEquals(true, requestBody.indexOf(captionBody) > 0);
+    String photoBody = String.format("\"photo\":%s",
+        req.getPhoto() == null ? "null" : "\"" + req.getPhoto() + "\"");
+    assertEquals(true, requestBody.indexOf(photoBody) > 0);
+    String headerBody = String.format("""
+        Content-Type: application/json
+        Content-Disposition: form-data; name="req"
+        Content-Length: %s
+        """,
+        chatIdBody.length() + tokenBody.length() + captionBody.length() + photoBody.length() + 5);
+    assertEquals(true, requestBody.indexOf(headerBody) > 0);
+
+    if (photo == null || photo.isBlank()) {
+      String photoFileBody =
+          "Content-Disposition: form-data; name=\"photoPart\"; filename=\"somefilename\"";
+      assertEquals(true, requestBody.indexOf(photoFileBody) > 0);
+    }
   }
 }

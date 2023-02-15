@@ -1,8 +1,8 @@
 package org.kquiet.browserjob.crawler.testsupport;
 
 import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -12,7 +12,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
  * @author monkey
  *
  */
-public class FlywaySupportExtension implements BeforeEachCallback, BeforeAllCallback {
+public class FlywaySupportExtension implements AfterEachCallback, BeforeAllCallback {
   private FlywaySupport annotation;
 
   @Override
@@ -21,8 +21,8 @@ public class FlywaySupportExtension implements BeforeEachCallback, BeforeAllCall
   }
 
   @Override
-  public void beforeEach(ExtensionContext context) throws Exception {
-    if (annotation.cleanBeforeEach()) {
+  public void afterEach(ExtensionContext context) throws Exception {
+    if (annotation.cleanAfterEach()) {
       Flyway flyway = SpringExtension.getApplicationContext(context).getBean(Flyway.class);
       flyway.clean();
       flyway.migrate();

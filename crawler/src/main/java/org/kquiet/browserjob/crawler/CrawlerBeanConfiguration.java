@@ -1,7 +1,5 @@
 package org.kquiet.browserjob.crawler;
 
-import io.opentelemetry.api.GlobalOpenTelemetry;
-import io.opentelemetry.api.OpenTelemetry;
 import javax.sql.DataSource;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
 import org.kquiet.browserjob.crawler.house591.House591Service;
@@ -44,18 +42,13 @@ public class CrawlerBeanConfiguration implements ApplicationContextAware {
     return context;
   }
 
-  @Bean
-  public OpenTelemetry openTelemetry() {
-    return GlobalOpenTelemetry.get();
-  }
-
   /**
    * data source.
    *
    * @return data source
    */
   @Bean("crawlerDataSource")
-  @ConfigurationProperties(prefix = "browser-scheduler.datasource")
+  @ConfigurationProperties(prefix = "crawler.data-source")
   public DataSource dataSource() {
     return DataSourceBuilder.create().build();
   }
