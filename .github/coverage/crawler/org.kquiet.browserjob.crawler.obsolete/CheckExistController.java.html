@@ -82,7 +82,7 @@ public class CheckExistController extends JobBase {
 
               // notify
 <span class="nc bnc" id="L84" title="All 2 branches missed.">              if (!&quot;&quot;.equals(chatId)) {</span>
-<span class="nc" id="L85">                crawlerService.notifyTelegram(chatToken, chatId, screenshot, checkUrl);</span>
+<span class="nc" id="L85">                crawlerService.telegramSendPhoto(chatId, chatToken, checkUrl, screenshot);</span>
               }
 <span class="nc" id="L87">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
 <span class="nc bnc" id="L88" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>

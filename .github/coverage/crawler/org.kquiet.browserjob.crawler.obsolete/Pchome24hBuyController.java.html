@@ -167,7 +167,7 @@ public class Pchome24hBuyController extends JobBase {
 <span class="nc bnc" id="L167" title="All 2 branches missed.">                if (!&quot;&quot;.equals(chatId)) {</span>
 <span class="nc" id="L168">                  File screenshot =</span>
 <span class="nc" id="L169">                      ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);</span>
-<span class="nc" id="L170">                  crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);</span>
+<span class="nc" id="L170">                  crawlerService.telegramSendPhoto(chatId, chatToken, itemId, screenshot);</span>
                 }
               }
 
@@ -184,7 +184,7 @@ public class Pchome24hBuyController extends JobBase {
 <span class="nc bnc" id="L184" title="All 2 branches missed.">              if (!&quot;&quot;.equals(chatId)) {</span>
 <span class="nc" id="L185">                File screenshot =</span>
 <span class="nc" id="L186">                    ((TakesScreenshot) ac.getWebDriver()).getScreenshotAs(OutputType.FILE);</span>
-<span class="nc" id="L187">                crawlerService.notifyTelegram(chatToken, chatId, screenshot, itemId);</span>
+<span class="nc" id="L187">                crawlerService.telegramSendPhoto(chatId, chatToken, itemId, screenshot);</span>
               }
 <span class="nc" id="L189">              LOGGER.info(&quot;{} succeed({}): {}&quot;, getName(), this.getResultStatus(),</span>
 <span class="nc" id="L190">                  this.getMessage());</span>

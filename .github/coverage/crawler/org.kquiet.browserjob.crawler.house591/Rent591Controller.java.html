@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Rent591Controller.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.house591</a> &gt; <span class="el_source">Rent591Controller.java</span></div><h1>Rent591Controller.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.house591;
 
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -28,172 +26,169 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class Rent591Controller extends JobBase {
-<span class="nc" id="L31">  private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Controller.class);</span>
-<span class="nc" id="L32">  private static final Meter METER = CrawlerBeanConfiguration.getAppContext()</span>
-<span class="nc" id="L33">      .getBean(OpenTelemetry.class).getMeter(Sale591Controller.class.getCanonicalName());</span>
-<span class="nc" id="L34">  private static final LongCounter INSTRUMENT_TELEGRAM_SENDPHOTO =</span>
-<span class="nc" id="L35">      METER.counterBuilder(&quot;new_rent_house_telegram_sendPhoto&quot;)</span>
-<span class="nc" id="L36">          .setDescription(&quot;count of succesful telegram sendPhoto api&quot;).build();</span>
-<span class="nc" id="L37">  private static final LongCounter INSTRUMENT_NEW_RENT_HOUSE =</span>
-<span class="nc" id="L38">      METER.counterBuilder(&quot;new_rent_house&quot;).setDescription(&quot;count of creation of new rent house&quot;)</span>
-<span class="nc" id="L39">          .build();</span>
+<span class="nc" id="L29">  private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Controller.class);</span>
 
   public Rent591Controller(JobConfig config) {
-<span class="nc" id="L42">    super(config);</span>
-<span class="nc" id="L43">  }</span>
+<span class="nc" id="L32">    super(config);</span>
+<span class="nc" id="L33">  }</span>
 
   @Override
   public void run() {
     try {
-<span class="nc" id="L48">      Rent591Crawler bac = new Rent591Crawler(this);</span>
-<span class="nc" id="L49">      this.submitBrowserTask(bac);</span>
-<span class="nc" id="L50">      bac.get();</span>
-<span class="nc" id="L51">      LOGGER.info(&quot;Job {} finished&quot;, getJobName());</span>
-<span class="nc" id="L52">    } catch (Exception e) {</span>
-<span class="nc" id="L53">      LOGGER.error(&quot;generating search task error:{}&quot;, e);</span>
-<span class="nc" id="L54">    }</span>
-<span class="nc" id="L55">  }</span>
+<span class="nc" id="L38">      Rent591Crawler bac = new Rent591Crawler(this);</span>
+<span class="nc" id="L39">      this.submitBrowserTask(bac);</span>
+<span class="nc" id="L40">      bac.get();</span>
+<span class="nc" id="L41">      LOGGER.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L42">    } catch (Exception e) {</span>
+<span class="nc" id="L43">      LOGGER.error(&quot;generating search task error:{}&quot;, e);</span>
+<span class="nc" id="L44">    }</span>
+<span class="nc" id="L45">  }</span>
 
   private void submitBrowserTask(Rent591Crawler bac) {
-<span class="nc" id="L58">    registerInternalBrowserTask(bac);</span>
-<span class="nc" id="L59">    LOGGER.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
-<span class="nc" id="L60">  }</span>
+<span class="nc" id="L48">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L49">    LOGGER.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L50">  }</span>
 
   private static class Rent591Crawler extends BasicActionComposer {
-<span class="nc" id="L63">    private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Crawler.class);</span>
+<span class="nc" id="L53">    private static final Logger LOGGER = LoggerFactory.getLogger(Rent591Crawler.class);</span>
 
-<span class="nc" id="L65">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+<span class="nc" id="L55">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
     private String message;
 
     public Rent591Crawler(JobBase job) {
-<span class="nc" id="L69">      super();</span>
-<span class="nc" id="L70">      config(job);</span>
-<span class="nc" id="L71">    }</span>
+<span class="nc" id="L59">      super();</span>
+<span class="nc" id="L60">      config(job);</span>
+<span class="nc" id="L61">    }</span>
 
     private void config(JobBase job) {
       try {
         CrawlerService crawlerService =
-<span class="nc" id="L76">            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
-<span class="nc" id="L77">        String botName = job.getJobName();</span>
-<span class="nc" id="L78">        Map&lt;String, String&gt; configMap = crawlerService.getBotConfig(botName);</span>
-<span class="nc" id="L79">        String entryUrl = configMap.get(&quot;entryUrl&quot;);</span>
-<span class="nc" id="L80">        String chatId = configMap.get(&quot;chatId&quot;);</span>
-<span class="nc" id="L81">        String chatToken = configMap.get(&quot;chatToken&quot;);</span>
-<span class="nc" id="L82">        boolean takeScreentshot = Boolean.parseBoolean(job.getParameter(&quot;takeScreenshot&quot;));</span>
+<span class="nc" id="L66">            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
+<span class="nc" id="L67">        String botName = job.getJobName();</span>
+<span class="nc" id="L68">        Map&lt;String, String&gt; configMap = crawlerService.getBotConfig(botName);</span>
+<span class="nc" id="L69">        String entryUrl = configMap.get(&quot;entryUrl&quot;);</span>
+<span class="nc" id="L70">        String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L71">        String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+<span class="nc" id="L72">        boolean takeScreentshot = Boolean.parseBoolean(job.getParameter(&quot;takeScreenshot&quot;));</span>
 
-<span class="nc" id="L84">        new ActionComposerBuilder().prepareActionSequence().getUrl(entryUrl).justWait(3000)</span>
-<span class="nc" id="L85">            .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id(&quot;j-loading&quot;)), 10000)</span>
-<span class="nc" id="L86">            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
-<span class="nc" id="L87">                By.xpath(&quot;//section[contains(@class,'vue-list-rent-item')]/a&quot;)), 10000)</span>
-<span class="nc" id="L88">            .custom(ac -&gt; {</span>
-<span class="nc" id="L89">              List&lt;WebElement&gt; propertyList = ac.getWebDriver()</span>
-<span class="nc" id="L90">                  .findElements(By.xpath(&quot;//section[contains(@class,'vue-list-rent-item')]/a&quot;));</span>
-<span class="nc" id="L91">              LOGGER.info(&quot;{} found {} properties&quot;, getName(), propertyList.size());</span>
-<span class="nc bnc" id="L92" title="All 4 branches missed.">              if (takeScreentshot &amp;&amp; propertyList.size() == 0) {</span>
-<span class="nc" id="L93">                crawlerService.takeScreenShot(ac.getWebDriver());</span>
+<span class="nc" id="L74">        new ActionComposerBuilder().prepareActionSequence().getUrl(entryUrl).justWait(3000)</span>
+<span class="nc" id="L75">            .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id(&quot;j-loading&quot;)), 10000)</span>
+<span class="nc" id="L76">            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L77">                By.xpath(&quot;//section[contains(@class,'vue-list-rent-item')]/a&quot;)), 10000)</span>
+<span class="nc" id="L78">            .custom(ac -&gt; {</span>
+<span class="nc" id="L79">              List&lt;WebElement&gt; propertyList = ac.getWebDriver()</span>
+<span class="nc" id="L80">                  .findElements(By.xpath(&quot;//section[contains(@class,'vue-list-rent-item')]/a&quot;));</span>
+<span class="nc" id="L81">              LOGGER.info(&quot;{} found {} properties&quot;, getName(), propertyList.size());</span>
+<span class="nc bnc" id="L82" title="All 4 branches missed.">              if (takeScreentshot &amp;&amp; propertyList.size() == 0) {</span>
+<span class="nc" id="L83">                crawlerService.takeScreenShot(ac.getWebDriver());</span>
               }
 
-<span class="nc bnc" id="L96" title="All 2 branches missed.">              for (WebElement property : propertyList) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">              for (WebElement property : propertyList) {</span>
                 try {
-<span class="nc" id="L98">                  String url = property.getAttribute(&quot;href&quot;).trim();</span>
-<span class="nc" id="L99">                  WebElement imageUrlE = property</span>
-<span class="nc" id="L100">                      .findElement(By.xpath(&quot;(./div[contains(@class,'rent-item-left')]//img)[1]&quot;));</span>
-<span class="nc" id="L101">                  String imageUrl = imageUrlE.getAttribute(&quot;data-original&quot;);</span>
-<span class="nc" id="L102">                  List&lt;WebElement&gt; descElementList =</span>
-<span class="nc" id="L103">                      property.findElements(By.xpath(&quot;./div[contains(@class,'rent-item-right')]&quot;</span>
+<span class="nc" id="L88">                  String url = property.getAttribute(&quot;href&quot;).trim();</span>
+<span class="nc" id="L89">                  WebElement imageUrlE = property</span>
+<span class="nc" id="L90">                      .findElement(By.xpath(&quot;(./div[contains(@class,'rent-item-left')]//img)[1]&quot;));</span>
+<span class="nc" id="L91">                  String imageUrl = imageUrlE.getAttribute(&quot;data-original&quot;);</span>
+<span class="nc" id="L92">                  List&lt;WebElement&gt; descElementList =</span>
+<span class="nc" id="L93">                      property.findElements(By.xpath(&quot;./div[contains(@class,'rent-item-right')]&quot;</span>
                           + &quot;/*[not(contains(@class,'item-price'))]&quot;));
-<span class="nc" id="L105">                  String description = descElementList.stream().map(s -&gt; s.getText())</span>
-<span class="nc" id="L106">                      .collect(Collectors.joining(System.lineSeparator()));</span>
-<span class="nc" id="L107">                  WebElement priceE =</span>
-<span class="nc" id="L108">                      property.findElement(By.xpath(&quot;./div[contains(@class,'rent-item-right')]&quot;</span>
+<span class="nc" id="L95">                  String description = descElementList.stream().map(s -&gt; s.getText())</span>
+<span class="nc" id="L96">                      .collect(Collectors.joining(System.lineSeparator()));</span>
+<span class="nc" id="L97">                  WebElement priceE =</span>
+<span class="nc" id="L98">                      property.findElement(By.xpath(&quot;./div[contains(@class,'rent-item-right')]&quot;</span>
                           + &quot;/*[contains(@class,'item-price')]&quot;));
-<span class="nc" id="L110">                  String price = priceE.getText();</span>
+<span class="nc" id="L100">                  String price = priceE.getText();</span>
 
                   // save for each property
                   House591Service house591Service =
-<span class="nc" id="L114">                      CrawlerBeanConfiguration.getAppContext().getBean(House591Service.class);</span>
-<span class="nc" id="L115">                  RentHouse toAdd = newRentHouse(url, imageUrl, description, price, botName);</span>
-<span class="nc" id="L116">                  boolean isExist = house591Service.existsRentHouse(toAdd.getUrl());</span>
-<span class="nc bnc" id="L117" title="All 2 branches missed.">                  if (!isExist) {</span>
-<span class="nc" id="L118">                    house591Service.addRentHouse(toAdd);</span>
-<span class="nc" id="L119">                    LOGGER.info(String.format(&quot;RentHouse:%s added&quot;, url));</span>
-<span class="nc" id="L120">                    INSTRUMENT_NEW_RENT_HOUSE.add(1L);</span>
-<span class="nc bnc" id="L121" title="All 4 branches missed.">                    if (!&quot;&quot;.equals(chatId) &amp;&amp; crawlerService.notifyTelegram(chatToken, chatId,</span>
-<span class="nc" id="L122">                        imageUrl, String.format(&quot;%s %s %s&quot;, url, description, price))) {</span>
-<span class="nc" id="L123">                      INSTRUMENT_TELEGRAM_SENDPHOTO.add(1L);</span>
+<span class="nc" id="L104">                      CrawlerBeanConfiguration.getAppContext().getBean(House591Service.class);</span>
+<span class="nc" id="L105">                  RentHouse toAdd = newRentHouse(url, imageUrl, description, price, botName);</span>
+<span class="nc" id="L106">                  boolean isExist = house591Service.existsRentHouse(toAdd.getUrl());</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">                  if (!isExist) {</span>
+<span class="nc" id="L108">                    house591Service.addRentHouse(toAdd);</span>
+<span class="nc" id="L109">                    LOGGER.info(String.format(&quot;RentHouse:%s added&quot;, url));</span>
+                    MeterRegistry meterRegistry =
+<span class="nc" id="L111">                        CrawlerBeanConfiguration.getAppContext().getBean(MeterRegistry.class);</span>
+<span class="nc" id="L112">                    meterRegistry.counter(&quot;new_rent_house&quot;).increment();</span>
+<span class="nc bnc" id="L113" title="All 2 branches missed.">                    if (!&quot;&quot;.equals(chatId)</span>
+                        &amp;&amp; crawlerService
+<span class="nc" id="L115">                            .telegramSendPhoto(chatId, chatToken,</span>
+<span class="nc" id="L116">                                String.format(&quot;%s %s %s&quot;, url, description, price), imageUrl)</span>
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                            .block()) {</span>
+<span class="nc" id="L118">                      meterRegistry.counter(&quot;new_rent_house.telegram_sendPhoto&quot;).increment();</span>
 
                       // telegram rate limit
-<span class="nc" id="L126">                      Thread.sleep(3000);</span>
+<span class="nc" id="L121">                      Thread.sleep(3000);</span>
                     }
                   }
-<span class="nc" id="L129">                } catch (Exception ex) {</span>
-<span class="nc" id="L130">                  LOGGER.warn(&quot;RentHouse element parse error&quot;, ex);</span>
-<span class="nc" id="L131">                }</span>
-<span class="nc" id="L132">              }</span>
-<span class="nc" id="L133">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
-<span class="nc bnc" id="L134" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
-<span class="nc" id="L135">                List&lt;Exception&gt; errList = ac.getErrors();</span>
-<span class="nc bnc" id="L136" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
-<span class="nc" id="L137">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+<span class="nc" id="L124">                } catch (Exception ex) {</span>
+<span class="nc" id="L125">                  LOGGER.warn(&quot;RentHouse element parse error&quot;, ex);</span>
+<span class="nc" id="L126">                }</span>
+<span class="nc" id="L127">              }</span>
+<span class="nc" id="L128">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L129" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L130">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L132">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
                 }
               }
-<span class="nc" id="L140">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
-<span class="nc" id="L141">            }).onSuccess(ac -&gt; {</span>
-<span class="nc" id="L142">              LOGGER.info(&quot;{} succeed:&quot;, getName(), this.getMessage());</span>
-<span class="nc" id="L143">            }).onDone(ac -&gt; {</span>
-<span class="nc bnc" id="L144" title="All 2 branches missed.">              if (ac.isFail()) {</span>
+<span class="nc" id="L135">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L136">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L137">              LOGGER.info(&quot;{} succeed:&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L138">            }).onDone(ac -&gt; {</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">              if (ac.isFail()) {</span>
                 // alert for some cases
-<span class="nc" id="L146">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
-<span class="nc bnc" id="L147" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
-<span class="nc bnc" id="L148" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
+<span class="nc" id="L141">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
+<span class="nc bnc" id="L143" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
                   // NOTHING TODO
                 }
               }
-<span class="nc" id="L152">            }).build(this, &quot;Rent591Crawler(&quot; + entryUrl + &quot;)&quot;);</span>
-<span class="nc" id="L153">      } catch (Exception ex) {</span>
-<span class="nc" id="L154">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
-<span class="nc" id="L155">      }</span>
-<span class="nc" id="L156">    }</span>
+<span class="nc" id="L147">            }).build(this, &quot;Rent591Crawler(&quot; + entryUrl + &quot;)&quot;);</span>
+<span class="nc" id="L148">      } catch (Exception ex) {</span>
+<span class="nc" id="L149">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L150">      }</span>
+<span class="nc" id="L151">    }</span>
 
     private static RentHouse newRentHouse(String url, String imageUrl, String description,
         String price, String maintainer) {
-<span class="nc" id="L160">      RentHouse obj = new RentHouse();</span>
-<span class="nc" id="L161">      obj.setUrl(url);</span>
-<span class="nc" id="L162">      obj.setSite(&quot;591&quot;);</span>
-<span class="nc" id="L163">      obj.setImageUrl(imageUrl);</span>
-<span class="nc" id="L164">      obj.setDescription(description);</span>
-<span class="nc" id="L165">      obj.setPrice(price);</span>
-<span class="nc" id="L166">      obj.setCreateuser(maintainer);</span>
-<span class="nc" id="L167">      obj.setCreatedate(LocalDateTime.now());</span>
-<span class="nc" id="L168">      return obj;</span>
+<span class="nc" id="L155">      RentHouse obj = new RentHouse();</span>
+<span class="nc" id="L156">      obj.setUrl(url);</span>
+<span class="nc" id="L157">      obj.setSite(&quot;591&quot;);</span>
+<span class="nc" id="L158">      obj.setImageUrl(imageUrl);</span>
+<span class="nc" id="L159">      obj.setDescription(description);</span>
+<span class="nc" id="L160">      obj.setPrice(price);</span>
+<span class="nc" id="L161">      obj.setCreateuser(maintainer);</span>
+<span class="nc" id="L162">      obj.setCreatedate(LocalDateTime.now());</span>
+<span class="nc" id="L163">      return obj;</span>
     }
 
     public ResultStatus getResultStatus() {
-<span class="nc" id="L172">      return this.resultStatus;</span>
+<span class="nc" id="L167">      return this.resultStatus;</span>
     }
 
     public String getMessage() {
-<span class="nc" id="L176">      return message;</span>
+<span class="nc" id="L171">      return message;</span>
     }
 
     public void setMessage(String message) {
-<span class="nc" id="L180">      this.message = message;</span>
-<span class="nc" id="L181">    }</span>
+<span class="nc" id="L175">      this.message = message;</span>
+<span class="nc" id="L176">    }</span>
   }
 
-<span class="nc" id="L184">  private static enum ResultStatus {</span>
-<span class="nc" id="L185">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
+<span class="nc" id="L179">  private static enum ResultStatus {</span>
+<span class="nc" id="L180">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
         &quot;UnknownFail&quot;);
 
     private final String name;
 
-<span class="nc" id="L190">    private ResultStatus(String name) {</span>
-<span class="nc" id="L191">      this.name = name;</span>
-<span class="nc" id="L192">    }</span>
+<span class="nc" id="L185">    private ResultStatus(String name) {</span>
+<span class="nc" id="L186">      this.name = name;</span>
+<span class="nc" id="L187">    }</span>
 
     @Override
     public String toString() {
-<span class="nc" id="L196">      return this.name;</span>
+<span class="nc" id="L191">      return this.name;</span>
     }
   }
 }

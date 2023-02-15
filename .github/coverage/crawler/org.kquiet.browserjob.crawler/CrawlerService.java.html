@@ -10,15 +10,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import org.kquiet.browserjob.crawler.dao.BotConfigRepository;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
+import org.kquiet.hecate.api.telegram.SendPhotoRequest;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.core.publisher.Mono;
 
 /**
  * Common business object.
@@ -26,8 +29,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author monkey
  *
  */
-<span class="fc" id="L29">public class CrawlerService {</span>
-<span class="fc" id="L30">  private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerService.class);</span>
+<span class="fc" id="L32">public class CrawlerService {</span>
+<span class="fc" id="L33">  private static final Logger LOGGER = LoggerFactory.getLogger(CrawlerService.class);</span>
 
   @Autowired
   private CrawlerDao dao;
@@ -37,21 +40,54 @@ import org.springframework.beans.factory.annotation.Autowired;
 
   @WithSpan
   public Map&lt;String, String&gt; getBotConfig(@SpanAttribute(&quot;botName&quot;) String botName) {
-<span class="fc" id="L40">    return botConfigRepo.findByBotIdBotname(botName).stream()</span>
-<span class="fc" id="L41">        .collect(Collectors.toMap(s -&gt; s.getBotId().getKey(), s -&gt; s.getValue()));</span>
+<span class="fc" id="L43">    return botConfigRepo.findByBotIdBotname(botName).stream()</span>
+<span class="fc" id="L44">        .collect(Collectors.toMap(s -&gt; s.getBotId().getKey(), s -&gt; s.getValue()));</span>
   }
 
+  /**
+   * Send message with photo url through telegram.
+   *
+   * @param chatId telegram chat id
+   * @param token telegram bot token
+   * @param caption message caption
+   * @param photo photo url
+   * @return whether messsage is sent
+   */
   @WithSpan
-  public boolean notifyTelegram(String token, @SpanAttribute(&quot;chatId&quot;) String chatId,
-      @SpanAttribute(&quot;imageUrl&quot;) String imageUrl, @SpanAttribute(&quot;caption&quot;) String caption) {
+  public Mono&lt;Boolean&gt; telegramSendPhoto(@SpanAttribute(&quot;chatId&quot;) String chatId,
+      @SpanAttribute(&quot;token&quot;) String token, @SpanAttribute(&quot;caption&quot;) String caption,
+      @SpanAttribute(&quot;photo&quot;) String photo) {
 
-<span class="fc" id="L48">    return dao.notifyTelegram(token, chatId, imageUrl, caption);</span>
+<span class="fc" id="L61">    return dao.telegramSendPhoto(createSendPhotoRequest(chatId, token, caption, photo),</span>
+<span class="fc" id="L62">        Optional.empty());</span>
   }
 
+  /**
+   * Send message with photo url through telegram.
+   *
+   * @param chatId telegram chat id
+   * @param token telegram bot token
+   * @param caption message caption
+   * @param photoFile photo file
+   * @return whether messsage is sent
+   */
   @WithSpan
-  public boolean notifyTelegram(String token, @SpanAttribute(&quot;chatId&quot;) String chatId, File photo,
-      @SpanAttribute(&quot;caption&quot;) String caption) {
-<span class="fc" id="L54">    return dao.notifyTelegram(token, chatId, photo, caption);</span>
+  public Mono&lt;Boolean&gt; telegramSendPhoto(@SpanAttribute(&quot;chatId&quot;) String chatId,
+      @SpanAttribute(&quot;token&quot;) String token, @SpanAttribute(&quot;caption&quot;) String caption,
+      @SpanAttribute(&quot;photoFile&quot;) File photoFile) {
+
+<span class="fc" id="L79">    return dao.telegramSendPhoto(createSendPhotoRequest(chatId, token, caption, null),</span>
+<span class="fc" id="L80">        Optional.of(photoFile));</span>
+  }
+
+  private SendPhotoRequest createSendPhotoRequest(String chatId, String token, String caption,
+      String photo) {
+<span class="fc" id="L85">    SendPhotoRequest obj = new SendPhotoRequest();</span>
+<span class="fc" id="L86">    obj.setChatId(chatId);</span>
+<span class="fc" id="L87">    obj.setCaption(caption);</span>
+<span class="fc" id="L88">    obj.setToken(token);</span>
+<span class="fc" id="L89">    obj.setPhoto(photo);</span>
+<span class="fc" id="L90">    return obj;</span>
   }
 
   /**
@@ -64,26 +100,26 @@ import org.springframework.beans.factory.annotation.Autowired;
   @WithSpan
   public List&lt;Path&gt; takeScreenShot(WebDriver webdriver,
       @SpanAttribute(&quot;paths&quot;) Path... parentPaths) {
-<span class="fc" id="L67">    byte[] screenShotBytes = ((TakesScreenshot) webdriver).getScreenshotAs(OutputType.BYTES);</span>
-<span class="fc" id="L68">    byte[] pageBytes = webdriver.getPageSource().getBytes();</span>
-<span class="pc bpc" id="L69" title="1 of 2 branches missed.">    Path parentPath = parentPaths.length &gt; 0 ? parentPaths[0].toAbsolutePath()</span>
-<span class="pc" id="L70">        : Path.of(&quot;&quot;, &quot;log&quot;).toAbsolutePath();</span>
-<span class="fc" id="L71">    String baseFileName =</span>
-<span class="fc" id="L72">        DateTimeFormatter.ofPattern(&quot;yyyyMMddHHmmssSSS&quot;).format(LocalDateTime.now());</span>
-<span class="fc" id="L73">    String screentShotFileName = baseFileName + &quot;.png&quot;;</span>
-<span class="fc" id="L74">    String pageFileName = baseFileName + &quot;.html&quot;;</span>
-<span class="fc" id="L75">    Path screenshotFilePath = parentPath.resolve(screentShotFileName);</span>
-<span class="fc" id="L76">    Path pageFilePath = parentPath.resolve(pageFileName);</span>
+<span class="fc" id="L103">    byte[] screenShotBytes = ((TakesScreenshot) webdriver).getScreenshotAs(OutputType.BYTES);</span>
+<span class="fc" id="L104">    byte[] pageBytes = webdriver.getPageSource().getBytes();</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">    Path parentPath = parentPaths.length &gt; 0 ? parentPaths[0].toAbsolutePath()</span>
+<span class="pc" id="L106">        : Path.of(&quot;&quot;, &quot;log&quot;).toAbsolutePath();</span>
+<span class="fc" id="L107">    String baseFileName =</span>
+<span class="fc" id="L108">        DateTimeFormatter.ofPattern(&quot;yyyyMMddHHmmssSSS&quot;).format(LocalDateTime.now());</span>
+<span class="fc" id="L109">    String screentShotFileName = baseFileName + &quot;.png&quot;;</span>
+<span class="fc" id="L110">    String pageFileName = baseFileName + &quot;.html&quot;;</span>
+<span class="fc" id="L111">    Path screenshotFilePath = parentPath.resolve(screentShotFileName);</span>
+<span class="fc" id="L112">    Path pageFilePath = parentPath.resolve(pageFileName);</span>
     try {
-<span class="fc" id="L78">      Files.createDirectories(parentPath);</span>
-<span class="fc" id="L79">      Files.write(pageFilePath, pageBytes);</span>
-<span class="fc" id="L80">      Files.write(screenshotFilePath, screenShotBytes);</span>
-<span class="fc" id="L81">      LOGGER.info(&quot;takeScreentShot succeed: {}, {}&quot;, screenshotFilePath, pageFilePath);</span>
-<span class="fc" id="L82">      return List.of(screenshotFilePath, pageFilePath);</span>
-<span class="nc" id="L83">    } catch (IOException ex) {</span>
-<span class="nc" id="L84">      LOGGER.warn(String.format(&quot;takeScreenShot failed: %s, %s&quot;, screenshotFilePath, pageFilePath),</span>
+<span class="fc" id="L114">      Files.createDirectories(parentPath);</span>
+<span class="fc" id="L115">      Files.write(pageFilePath, pageBytes);</span>
+<span class="fc" id="L116">      Files.write(screenshotFilePath, screenShotBytes);</span>
+<span class="fc" id="L117">      LOGGER.info(&quot;takeScreentShot succeed: {}, {}&quot;, screenshotFilePath, pageFilePath);</span>
+<span class="fc" id="L118">      return List.of(screenshotFilePath, pageFilePath);</span>
+<span class="nc" id="L119">    } catch (IOException ex) {</span>
+<span class="nc" id="L120">      LOGGER.warn(String.format(&quot;takeScreenShot failed: %s, %s&quot;, screenshotFilePath, pageFilePath),</span>
           ex);
-<span class="nc" id="L86">      return List.of();</span>
+<span class="nc" id="L122">      return List.of();</span>
     }
   }
 }
