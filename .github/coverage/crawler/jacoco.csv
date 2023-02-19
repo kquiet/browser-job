@@ -1,14 +1,14 @@
 GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
 crawler,org.kquiet.browserjob.crawler,CrawlerService,27,130,1,1,3,29,1,9,0,9
 crawler,org.kquiet.browserjob.crawler,CrawlerBeanConfiguration,2,42,0,0,1,11,1,8,1,8
-crawler,org.kquiet.browserjob.crawler.entity,BotConfig,52,17,6,0,8,7,6,5,3,5
-crawler,org.kquiet.browserjob.crawler.entity,BotId,45,17,10,0,6,7,7,5,2,5
+crawler,org.kquiet.browserjob.crawler.entity,BotConfig,25,44,6,0,6,9,5,6,2,6
+crawler,org.kquiet.browserjob.crawler.entity,BotId,31,31,10,0,5,8,6,6,1,6
 crawler,org.kquiet.browserjob.crawler.dao,CrawlerDao,13,90,1,3,3,15,3,8,2,7
 crawler,org.kquiet.browserjob.crawler.house591.entity,SaleHouse,117,10,6,0,26,4,18,3,15,3
 crawler,org.kquiet.browserjob.crawler.house591.entity,RentHouse,117,10,6,0,26,4,18,3,15,3
 crawler,org.kquiet.browserjob.crawler.util,NetHelper,75,0,10,0,27,0,8,0,3,0
-crawler,org.kquiet.browserjob.crawler.obsolete,RailwayBookController.ResultStatus,56,0,0,0,8,0,3,0,3,0
 crawler,org.kquiet.browserjob.crawler.obsolete,RailwayBookController,41,0,0,0,14,0,4,0,4,0
+crawler,org.kquiet.browserjob.crawler.obsolete,RailwayBookController.ResultStatus,56,0,0,0,8,0,3,0,3,0
 crawler,org.kquiet.browserjob.crawler.obsolete,EasycardJcbRegisterController.EasycardJcbRegisterCrawler,589,0,14,0,116,0,25,0,18,0
 crawler,org.kquiet.browserjob.crawler.obsolete,RailwayBookController.RailwayBookCrawler,826,0,20,0,126,0,37,0,27,0
 crawler,org.kquiet.browserjob.crawler.obsolete,RailwayBookController.TicketOrder,120,0,0,0,19,0,10,0,10,0
@@ -18,8 +18,8 @@ crawler,org.kquiet.browserjob.crawler.obsolete,EasycardJcbRegisterController,72,
 crawler,org.kquiet.browserjob.crawler.obsolete,Pchome24hBuyController.ResultStatus,49,0,0,0,7,0,3,0,3,0
 crawler,org.kquiet.browserjob.crawler.obsolete,EasycardJcbRegisterController.EasycardJcb,34,0,0,0,7,0,4,0,4,0
 crawler,org.kquiet.browserjob.crawler.obsolete,CheckExistController,41,0,0,0,14,0,4,0,4,0
-crawler,org.kquiet.browserjob.crawler.obsolete,Pchome24hBuyController,41,0,0,0,14,0,4,0,4,0
 crawler,org.kquiet.browserjob.crawler.obsolete,EasycardJcbRegisterController.ResultStatus,63,0,0,0,7,0,3,0,3,0
+crawler,org.kquiet.browserjob.crawler.obsolete,Pchome24hBuyController,41,0,0,0,14,0,4,0,4,0
 crawler,org.kquiet.browserjob.crawler.obsolete,Pchome24hBuyController.Pchome24hBuyCrawler,586,0,18,0,124,0,35,0,26,0
 crawler,org.kquiet.browserjob.crawler.house591,House591Service,0,25,0,0,0,5,0,5,0,5
 crawler,org.kquiet.browserjob.crawler.house591,Rent591Controller.Rent591Crawler,359,0,26,0,83,0,25,0,12,0
