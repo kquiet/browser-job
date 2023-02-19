@@ -17,7 +17,7 @@
     <opentelemetry.instrumentation.annotation.version>1.22.1</opentelemetry.instrumentation.annotation.version>
     <slf4j.version>2.0.6</slf4j.version>
     <selenium.version>4.8.0</selenium.version>
-    <hecate.version>0.0.1</hecate.version>
+    <hecate.version>0.0.2</hecate.version>
     <browserscheduler.version>2.0.4</browserscheduler.version>
     <auto-browser.version>2.0.4</auto-browser.version>
     <spring.boot.version>3.0.2</spring.boot.version>
@@ -334,7 +334,7 @@
             </manifestEntries>
           </archive>
           <excludes>
-            <exclude>logback.xml</exclude>
+            <exclude>logback-spring.xml</exclude>
             <exclude>application.yml</exclude>
           </excludes>
         </configuration>
