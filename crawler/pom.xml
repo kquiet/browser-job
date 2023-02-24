@@ -7,21 +7,21 @@
     <version>0.1.0</version>
   </parent>
   <artifactId>crawler</artifactId>
-  <version>0.1.8</version>
+  <version>0.1.9</version>
   <packaging>jar</packaging>
   <url>https://github.com/kquiet/browser-job/crawler</url>
 
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
 
-    <opentelemetry.instrumentation.annotation.version>1.22.1</opentelemetry.instrumentation.annotation.version>
+    <opentelemetry.instrumentation.annotation.version>1.23.0</opentelemetry.instrumentation.annotation.version>
     <slf4j.version>2.0.6</slf4j.version>
-    <selenium.version>4.8.0</selenium.version>
-    <hecate.version>0.0.1</hecate.version>
-    <browserscheduler.version>2.0.4</browserscheduler.version>
-    <auto-browser.version>2.0.4</auto-browser.version>
-    <spring.boot.version>3.0.2</spring.boot.version>
-    <flyway.version>9.14.1</flyway.version>
+    <selenium.version>4.8.1</selenium.version>
+    <hecate.version>0.0.3</hecate.version>
+    <browserscheduler.version>2.0.5</browserscheduler.version>
+    <auto-browser.version>2.0.5</auto-browser.version>
+    <spring.boot.version>3.0.3</spring.boot.version>
+    <flyway.version>9.15.0</flyway.version>
 
     <mysql-connector-j.version>8.0.32</mysql-connector-j.version>
     <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
@@ -334,7 +334,7 @@
             </manifestEntries>
           </archive>
           <excludes>
-            <exclude>logback.xml</exclude>
+            <exclude>logback-spring.xml</exclude>
             <exclude>application.yml</exclude>
           </excludes>
         </configuration>

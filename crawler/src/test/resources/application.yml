@@ -47,7 +47,7 @@ browser-scheduler:
     enable: false
     clearLogInterval: 86400
   browser:
-    type: firefox
+    type: chrome
     maxTask: 1
     pageLoadStrategy: none
     headless: true

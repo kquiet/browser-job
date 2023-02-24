@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration packagingData="true" debug="false">
+  <!-- variables -->
+  <property name="logbackLogDirectory" value="log"
+    scope="local" />
+  <property name="logbackMaxHistory" value="30" scope="local" />
+  <property name="logbackTotalSizeCap" value="1GB"
+    scope="local" />
+
+  <!-- appenders -->
+  <appender name="consoleJson"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <encoder
+      class="net.logstash.logback.encoder.LogstashEncoder">
+      <encoding>UTF-8</encoding>
+      <fieldNames>
+        <timestamp>timestamp</timestamp>
+        <message>message</message>
+        <logger>logger</logger>
+        <thread>thread</thread>
+        <level>level</level>
+        <version>[ignore]</version>
+        <levelValue>[ignore]</levelValue>
+      </fieldNames>
+    </encoder>
+  </appender>
+
+  <appender name="console"
+    class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger] => %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="asyncConsole"
+    class="ch.qos.logback.classic.AsyncAppender" discardingThreshold="0">
+    <springProfile name="jsonlog">
+      <appender-ref ref="consoleJson" />
+    </springProfile>
+    <springProfile name="!jsonlog">
+      <appender-ref ref="console" />
+    </springProfile>
+  </appender>
+
+  <appender name="file"
+    class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <rollingPolicy
+      class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+      <fileNamePattern>${logbackLogDirectory}/%d{yyyy-MM-dd}/all.log.gz
+      </fileNamePattern>
+      <maxHistory>${logbackMaxHistory}</maxHistory>
+      <totalSizeCap>${logbackTotalSizeCap}</totalSizeCap>
+      <cleanHistoryOnStart>true</cleanHistoryOnStart>
+    </rollingPolicy>
+    <immediateFlush>true</immediateFlush>
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger] => %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="asyncFile"
+    class="ch.qos.logback.classic.AsyncAppender" discardingThreshold="0">
+    <appender-ref ref="file" />
+  </appender>
+
+  <appender name="jTextAreaError"
+    class="org.kquiet.browserscheduler.util.JtextAreaLogAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>WARN</level>
+    </filter>
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%logger] => %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="asyncJTextAreaError"
+    class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="jTextAreaError" />
+  </appender>
+
+  <appender name="jTextAreaInfo"
+    class="org.kquiet.browserscheduler.util.JtextAreaLogAppender">
+    <filter class="ch.qos.logback.classic.filter.LevelFilter">
+      <level>INFO</level>
+      <onMatch>NEUTRAL</onMatch>
+      <onMismatch>DENY</onMismatch>
+    </filter>
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%logger] => %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="asyncJTextAreaInfo"
+    class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="jTextAreaInfo" />
+  </appender>
+
+  <appender name="jTextAreaDebug"
+    class="org.kquiet.browserscheduler.util.JtextAreaLogAppender">
+    <filter
+      class="org.kquiet.browserscheduler.util.UpperBoundFilter">
+      <level>DEBUG</level>
+    </filter>
+    <encoder>
+      <charset>UTF-8</charset>
+      <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%logger] => %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <appender name="asyncJTextAreaDebug"
+    class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="jTextAreaDebug" />
+  </appender>
+
+  <!-- root logger -->
+  <root level="debug">
+    <appender-ref ref="asyncConsole" />
+    <appender-ref ref="asyncFile" />
+
+    <appender-ref ref="asyncJTextAreaError" />
+    <appender-ref ref="asyncJTextAreaInfo" />
+    <appender-ref ref="asyncJTextAreaDebug" />
+  </root>
+
+  <logger name="org.testcontainers" level="info" />
+
+  <logger name="com.github.dockerjava" level="info" />
+
+  <logger name="org.flywaydb" level="info" />
+
+  <logger name="org.hibernate.SQL" level="debug" />
+
+  <logger name="org.hibernate.orm.results" level="debug" />
+
+  <logger name="org.hibernate" level="info" />
+
+  <logger name="com.zaxxer.hikari" level="info" />
+
+  <logger name="org.springframework" level="info" />
+
+  <logger name="org.asynchttpclient.netty" level="info" />
+
+  <logger name="org.apache.http" level="info" />
+
+  <logger name="io.netty" level="info" />
+
+  <shutdownHook />
+</configuration>
