@@ -17,8 +17,8 @@
     <opentelemetry.instrumentation.annotation.version>1.23.0</opentelemetry.instrumentation.annotation.version>
     <slf4j.version>2.0.6</slf4j.version>
     <selenium.version>4.8.1</selenium.version>
-    <hecate.version>0.0.3</hecate.version>
-    <browserscheduler.version>2.0.5</browserscheduler.version>
+    <hecate.version>0.0.4</hecate.version>
+    <browserscheduler.version>2.0.6</browserscheduler.version>
     <auto-browser.version>2.0.5</auto-browser.version>
     <spring.boot.version>3.0.3</spring.boot.version>
     <flyway.version>9.15.0</flyway.version>
