@@ -53,12 +53,21 @@ browser-scheduler:
   jobParallelism: 1
   springComponentScanBasePackages: "org.kquiet.browserjob"
   jobs:
+  - name: BigFunA
+    enable: false
+    impl: org.kquiet.browserjob.crawler.bigfun.BigFunController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 600
+    scheduleAfterExec: true
+    parameters:
+      takeScreenshot: "true"
   - name: Sale591A
     enable: true
     impl: org.kquiet.browserjob.crawler.house591.Sale591Controller
     dailyStart: "00:00:00"
     dailyEnd: "00:00:00"
-    interval: 1800
+    interval: 600
     scheduleAfterExec: true
     parameters:
       takeScreenshot: "true"

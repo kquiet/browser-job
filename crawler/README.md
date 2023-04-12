@@ -7,12 +7,17 @@ There are multiple browser jobs:
 |Job|Description|
 |---|---|
 |`Sale591`|Scrape [591/sale][] and notify through Telegram|
+|`BigFun`|Scrape [BigFun][]|
 
 Before running any job, please refer to [Browser-Scheduler][] for the details of setting a browser job.
 
 ## Sale591
 
 This job will read job settings from a SQL database(MySQL currently), scrape [591/sale][], and then send messages to the desired chat through [Telegram Bot API][].
+
+## BigFun
+
+This job will read job settings from a SQL database(MySQL currently), scrape [BigFun][], and then save to a SQL database.
 
 ### Usage
 For this job, you need to prepare a MySQL/MariaDb database to store its settings in table `botconfig`.
@@ -36,6 +41,7 @@ As this job adopts [Flyway][], you can write your own script files(.sql) and pla
 
 
 [591/sale]: https://sale.591.com.tw/ "591 sale"
+[BigFun]: https://www.ibigfun.com/lists/latest "BigFun"
 [Telegram Bot API]: https://core.telegram.org/bots/api "Telegram Bot API"
 [Telegram Web]: https://web.telegram.org/z "Telegram Web"
 [Telegram BotFather]: https://core.telegram.org/bots/features#botfather "Telegram BotFather"
