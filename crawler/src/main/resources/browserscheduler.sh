@@ -32,4 +32,4 @@ _EOF_
   sleep 10s
 fi
 
-exec java -Dspring.profiles.active=jsonlog -Dchrome_sandbox=no -cp "lib/:lib/*:ext/:ext/*" org.kquiet.browserscheduler.Launcher
+exec java -Dspring.profiles.active=jsonlog -Dchrome_option_args="--no-sandbox,--disable-dev-shm-usage,--remote-allow-origins=*" -cp "lib/:lib/*:ext/:ext/*" org.kquiet.browserscheduler.Launcher

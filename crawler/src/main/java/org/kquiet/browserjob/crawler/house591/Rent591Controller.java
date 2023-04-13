@@ -106,23 +106,25 @@ public class Rent591Controller extends JobBase {
                   boolean isExist = house591Service.existsRentHouse(toAdd.getUrl());
                   if (!isExist) {
                     house591Service.addRentHouse(toAdd);
-                    LOGGER.info(String.format("RentHouse:%s added", url));
+                    LOGGER.info(String.format("%s:%s added", RentHouse.class.getName(), url));
                     MeterRegistry meterRegistry =
                         CrawlerBeanConfiguration.getAppContext().getBean(MeterRegistry.class);
-                    meterRegistry.counter("new_rent_house").increment();
+                    String meterNameNew = "crawler_591_new_rent_house";
+                    String meterNameSendPhoto = "crawler_591_new_rent_house.telegram_send_photo";
+                    meterRegistry.counter(meterNameNew).increment();
                     if (!"".equals(chatId)
                         && crawlerService
                             .telegramSendPhoto(chatId, chatToken,
                                 String.format("%s %s %s", url, description, price), imageUrl)
                             .block()) {
-                      meterRegistry.counter("new_rent_house.telegram_sendPhoto").increment();
+                      meterRegistry.counter(meterNameSendPhoto).increment();
 
                       // telegram rate limit
                       Thread.sleep(3000);
                     }
                   }
                 } catch (Exception ex) {
-                  LOGGER.warn("RentHouse element parse error", ex);
+                  LOGGER.warn(RentHouse.class.getName() + " element parse error", ex);
                 }
               }
             }).returnToComposerBuilder().onFail(ac -> {
@@ -144,7 +146,7 @@ public class Rent591Controller extends JobBase {
                   // NOTHING TODO
                 }
               }
-            }).build(this, "Rent591Crawler(" + entryUrl + ")");
+            }).build(this, Rent591Crawler.class.getName() + "(" + entryUrl + ")");
       } catch (Exception ex) {
         LOGGER.error("Create crawler error!", ex);
       }

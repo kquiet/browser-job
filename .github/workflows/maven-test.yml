@@ -20,7 +20,7 @@ jobs:
         architecture: x64
         distribution: 'temurin'
         cache: 'maven'
-    - run: mvn -B clean verify
+    - run: mvn -B clean verify -Dchrome_option_args="--remote-allow-origins=*"
     - name: Upload JaCoCo coverage report
       if: github.ref_type == 'branch' && github.ref_name == 'dev'
       uses: actions/upload-artifact@v3

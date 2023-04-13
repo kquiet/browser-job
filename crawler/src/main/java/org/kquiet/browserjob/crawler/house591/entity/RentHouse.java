@@ -115,7 +115,7 @@ public class RentHouse {
   public String toString() {
     return String.format(
         "%s[url=%s, site='%s', imageUrl='%s', "
-            + "description='%s', price='%s', price='%s', price='%s']",
+            + "description='%s', price='%s', createuser='%s', createdate='%s']",
         RentHouse.class.getTypeName(), url, site, imageUrl, description, price, createuser,
         createdate);
   }
