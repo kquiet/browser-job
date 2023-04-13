@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RealEstate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.bigfun.entity</a> &gt; <span class="el_source">RealEstate.java</span></div><h1>RealEstate.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.bigfun.entity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * real estate.
+ *
+ * @author monkey
+ *
+ */
+@Entity
+@Table(name = &quot;real_estate&quot;)
+<span class="nc" id="L19">public class RealEstate {</span>
+  @Id
+  @Column(name = &quot;url&quot;)
+  private String url;
+
+  @Column(name = &quot;imageUrl&quot;)
+  private String imageUrl;
+
+  @Column(name = &quot;title&quot;)
+  private String title;
+
+  @Column(name = &quot;type&quot;)
+  private String type;
+
+  @Column(name = &quot;layout&quot;)
+  private String layout;
+
+  @Column(name = &quot;community&quot;)
+  private String community;
+
+  @Column(name = &quot;address&quot;)
+  private String address;
+
+  @Column(name = &quot;floor&quot;)
+  private String floor;
+
+  @Column(name = &quot;age&quot;)
+  private BigDecimal age;
+
+  @Column(name = &quot;parking&quot;)
+  private String parking;
+
+  @Column(name = &quot;priceTotal&quot;)
+  private BigDecimal priceTotal;
+
+  @Column(name = &quot;priceAveragePing&quot;)
+  private BigDecimal priceAveragePing;
+
+  @Column(name = &quot;areaLand&quot;)
+  private BigDecimal areaLand;
+
+  @Column(name = &quot;areaTotal&quot;)
+  private BigDecimal areaTotal;
+
+  @Column(name = &quot;areaMain&quot;)
+  private BigDecimal areaMain;
+
+  @Column(name = &quot;site&quot;)
+  private String site;
+
+  @Column(name = &quot;source&quot;)
+  private String source;
+
+  @Column(name = &quot;postDate&quot;)
+  private LocalDateTime postDate;
+
+  @Column(name = &quot;createUser&quot;)
+  private String createUser;
+
+  @Column(name = &quot;createDate&quot;)
+  private LocalDateTime createDate;
+
+  public String getUrl() {
+<span class="nc" id="L82">    return url;</span>
+  }
+
+  public void setUrl(String url) {
+<span class="nc" id="L86">    this.url = url;</span>
+<span class="nc" id="L87">  }</span>
+
+  public String getImageUrl() {
+<span class="nc" id="L90">    return imageUrl;</span>
+  }
+
+  public void setImageUrl(String imageUrl) {
+<span class="nc" id="L94">    this.imageUrl = imageUrl;</span>
+<span class="nc" id="L95">  }</span>
+
+  public String getTitle() {
+<span class="nc" id="L98">    return title;</span>
+  }
+
+  public void setTitle(String title) {
+<span class="nc" id="L102">    this.title = title;</span>
+<span class="nc" id="L103">  }</span>
+
+  public String getType() {
+<span class="nc" id="L106">    return type;</span>
+  }
+
+  public void setType(String type) {
+<span class="nc" id="L110">    this.type = type;</span>
+<span class="nc" id="L111">  }</span>
+
+  public String getLayout() {
+<span class="nc" id="L114">    return layout;</span>
+  }
+
+  public void setLayout(String layout) {
+<span class="nc" id="L118">    this.layout = layout;</span>
+<span class="nc" id="L119">  }</span>
+
+  public String getCommunity() {
+<span class="nc" id="L122">    return community;</span>
+  }
+
+  public void setCommunity(String community) {
+<span class="nc" id="L126">    this.community = community;</span>
+<span class="nc" id="L127">  }</span>
+
+  public String getAddress() {
+<span class="nc" id="L130">    return address;</span>
+  }
+
+  public void setAddress(String address) {
+<span class="nc" id="L134">    this.address = address;</span>
+<span class="nc" id="L135">  }</span>
+
+  public String getFloor() {
+<span class="nc" id="L138">    return floor;</span>
+  }
+
+  public void setFloor(String floor) {
+<span class="nc" id="L142">    this.floor = floor;</span>
+<span class="nc" id="L143">  }</span>
+
+  public BigDecimal getAge() {
+<span class="nc" id="L146">    return age;</span>
+  }
+
+  public void setAge(BigDecimal age) {
+<span class="nc" id="L150">    this.age = age;</span>
+<span class="nc" id="L151">  }</span>
+
+  public String getParking() {
+<span class="nc" id="L154">    return parking;</span>
+  }
+
+  public void setParking(String parking) {
+<span class="nc" id="L158">    this.parking = parking;</span>
+<span class="nc" id="L159">  }</span>
+
+  public BigDecimal getPriceTotal() {
+<span class="nc" id="L162">    return priceTotal;</span>
+  }
+
+  public void setPriceTotal(BigDecimal priceTotal) {
+<span class="nc" id="L166">    this.priceTotal = priceTotal;</span>
+<span class="nc" id="L167">  }</span>
+
+  public BigDecimal getPriceAveragePing() {
+<span class="nc" id="L170">    return priceAveragePing;</span>
+  }
+
+  public void setPriceAveragePing(BigDecimal priceAveragePing) {
+<span class="nc" id="L174">    this.priceAveragePing = priceAveragePing;</span>
+<span class="nc" id="L175">  }</span>
+
+  public BigDecimal getAreaLand() {
+<span class="nc" id="L178">    return areaLand;</span>
+  }
+
+  public void setAreaLand(BigDecimal areaLand) {
+<span class="nc" id="L182">    this.areaLand = areaLand;</span>
+<span class="nc" id="L183">  }</span>
+
+  public BigDecimal getAreaTotal() {
+<span class="nc" id="L186">    return areaTotal;</span>
+  }
+
+  public void setAreaTotal(BigDecimal areaTotal) {
+<span class="nc" id="L190">    this.areaTotal = areaTotal;</span>
+<span class="nc" id="L191">  }</span>
+
+  public BigDecimal getAreaMain() {
+<span class="nc" id="L194">    return areaMain;</span>
+  }
+
+  public void setAreaMain(BigDecimal areaMain) {
+<span class="nc" id="L198">    this.areaMain = areaMain;</span>
+<span class="nc" id="L199">  }</span>
+
+  public String getSite() {
+<span class="nc" id="L202">    return site;</span>
+  }
+
+  public void setSite(String site) {
+<span class="nc" id="L206">    this.site = site;</span>
+<span class="nc" id="L207">  }</span>
+
+  public String getSource() {
+<span class="nc" id="L210">    return source;</span>
+  }
+
+  public void setSource(String source) {
+<span class="nc" id="L214">    this.source = source;</span>
+<span class="nc" id="L215">  }</span>
+
+  public LocalDateTime getPostDate() {
+<span class="nc" id="L218">    return postDate;</span>
+  }
+
+  public void setPostDate(LocalDateTime postDate) {
+<span class="nc" id="L222">    this.postDate = postDate;</span>
+<span class="nc" id="L223">  }</span>
+
+  public String getCreateUser() {
+<span class="nc" id="L226">    return createUser;</span>
+  }
+
+  public void setCreateUser(String createUser) {
+<span class="nc" id="L230">    this.createUser = createUser;</span>
+<span class="nc" id="L231">  }</span>
+
+  public LocalDateTime getCreateDate() {
+<span class="nc" id="L234">    return createDate;</span>
+  }
+
+  public void setCreateDate(LocalDateTime createDate) {
+<span class="nc" id="L238">    this.createDate = createDate;</span>
+<span class="nc" id="L239">  }</span>
+
+  @Override
+  public boolean equals(Object obj) {
+<span class="nc bnc" id="L243" title="All 2 branches missed.">    if (this == obj) {</span>
+<span class="nc" id="L244">      return true;</span>
+    }
+<span class="nc bnc" id="L246" title="All 4 branches missed.">    if (obj != null &amp;&amp; obj instanceof RealEstate temp) {</span>
+<span class="nc" id="L247">      return Objects.equals(url, temp.getUrl());</span>
+    } else {
+<span class="nc" id="L249">      return false;</span>
+    }
+  }
+
+  @Override
+  public int hashCode() {
+<span class="nc" id="L255">    return Objects.hash(url);</span>
+  }
+
+  @Override
+  public String toString() {
+<span class="nc" id="L260">    return String.format(&quot;%s[url=%s, site='%s', createUser='%s', createDate='%s']&quot;,</span>
+<span class="nc" id="L261">        RealEstate.class.getTypeName(), url, site, createUser, createDate);</span>
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

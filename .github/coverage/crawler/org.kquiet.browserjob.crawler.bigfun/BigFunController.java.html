@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BigFunController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.bigfun</a> &gt; <span class="el_source">BigFunController.java</span></div><h1>BigFunController.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.bigfun;
+
+import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browser.BasicActionComposer;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserjob.crawler.bigfun.entity.RealEstate;
+import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
+import org.kquiet.browserscheduler.JobBase;
+import org.openqa.selenium.By;
+import org.openqa.selenium.ElementClickInterceptedException;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Sale591Controller.
+ *
+ * @author monkey
+ *
+ */
+public class BigFunController extends JobBase {
+<span class="nc" id="L36">  private static final Logger LOGGER = LoggerFactory.getLogger(BigFunController.class);</span>
+
+  public BigFunController(JobConfig config) {
+<span class="nc" id="L39">    super(config);</span>
+<span class="nc" id="L40">  }</span>
+
+  @Override
+  @WithSpan
+  public void run() {
+    try {
+<span class="nc" id="L46">      BigFunCrawler bac = new BigFunCrawler(this);</span>
+<span class="nc" id="L47">      this.submitBrowserTask(bac);</span>
+<span class="nc" id="L48">      bac.get();</span>
+<span class="nc" id="L49">      LOGGER.info(&quot;Job {} finished&quot;, getJobName());</span>
+<span class="nc" id="L50">    } catch (Exception e) {</span>
+<span class="nc" id="L51">      LOGGER.error(&quot;generating search task error:{}&quot;, e);</span>
+<span class="nc" id="L52">    }</span>
+<span class="nc" id="L53">  }</span>
+
+  private void submitBrowserTask(BigFunCrawler bac) {
+<span class="nc" id="L56">    registerInternalBrowserTask(bac);</span>
+<span class="nc" id="L57">    LOGGER.info(&quot;Browser task({}) accepted&quot;, bac.getName());</span>
+<span class="nc" id="L58">  }</span>
+
+  private static class BigFunCrawler extends BasicActionComposer {
+<span class="nc" id="L61">    private static final Logger LOGGER = LoggerFactory.getLogger(BigFunCrawler.class);</span>
+
+<span class="nc" id="L63">    private ResultStatus resultStatus = ResultStatus.WaitingToDo;</span>
+    private String message;
+
+    public BigFunCrawler(JobBase job) {
+<span class="nc" id="L67">      super();</span>
+<span class="nc" id="L68">      config(job);</span>
+<span class="nc" id="L69">    }</span>
+
+    private void config(JobBase job) {
+      try {
+        CrawlerService crawlerService =
+<span class="nc" id="L74">            CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
+<span class="nc" id="L75">        String botName = job.getJobName();</span>
+<span class="nc" id="L76">        Map&lt;String, String&gt; configMap = crawlerService.getBotConfig(botName);</span>
+<span class="nc" id="L77">        String loginUrl = configMap.get(&quot;loginUrl&quot;);</span>
+<span class="nc" id="L78">        String userName = configMap.get(&quot;userName&quot;);</span>
+<span class="nc" id="L79">        String password = configMap.get(&quot;password&quot;);</span>
+<span class="nc" id="L80">        String entryUrl = configMap.get(&quot;entryUrl&quot;);</span>
+<span class="nc" id="L81">        String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L82">        String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+<span class="nc" id="L83">        boolean takeScreentshot = Boolean.parseBoolean(job.getParameter(&quot;takeScreenshot&quot;));</span>
+
+<span class="nc" id="L85">        new ActionComposerBuilder().prepareActionSequence().getUrl(loginUrl).justWait(5000)</span>
+<span class="nc" id="L86">            .prepareIfThenElse(ac -&gt; ExpectedConditions</span>
+<span class="nc" id="L87">                .visibilityOfElementLocated(</span>
+<span class="nc" id="L88">                    By.xpath(&quot;//*[@id='content']//button[contains(@value,'login')]&quot;))</span>
+<span class="nc" id="L89">                .apply(ac.getWebDriver()))</span>
+<span class="nc" id="L90">            .then()</span>
+<span class="nc" id="L91">            .sendKey(By.xpath(&quot;//*[@id='content']//input[@id='login-form-username']&quot;), userName)</span>
+<span class="nc" id="L92">            .sendKey(By.xpath(&quot;//*[@id='content']//input[@id='login-form-password']&quot;), password)</span>
+<span class="nc" id="L93">            .click(By.xpath(&quot;//*[@id='content']//button[contains(@value,'login')]&quot;)).justWait(5000)</span>
+<span class="nc" id="L94">            .endActionSequence().endIf().customMultiPhase(mp -&gt; ac -&gt; {</span>
+              try {
+<span class="nc" id="L96">                List&lt;WebElement&gt; popup =</span>
+<span class="nc" id="L97">                    ac.getWebDriver().findElements(By.id(&quot;//div[@id='swal2-content']&quot;));</span>
+<span class="nc bnc" id="L98" title="All 4 branches missed.">                if (popup.size() &gt; 0 &amp;&amp; popup.get(0).isDisplayed()) {</span>
+<span class="nc" id="L99">                  throw new Exception(popup.get(0).getText().trim());</span>
+                }
+<span class="nc" id="L101">                mp.noNextPhase();</span>
+<span class="nc" id="L102">              } catch (Exception ex) {</span>
+<span class="nc" id="L103">                LOGGER.warn(&quot;pop up handling failed&quot;, ex);</span>
+<span class="nc" id="L104">              }</span>
+<span class="nc" id="L105">            })</span>
+<span class="nc" id="L106">            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L107">                By.xpath(&quot;//div[@id='top-link']//a[contains(text(),'登出')]&quot;)), 10000)</span>
+<span class="nc" id="L108">            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.id(&quot;total_result&quot;)),</span>
+                10000)
+<span class="nc" id="L110">            .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id(&quot;loading-cover&quot;)),</span>
+                10000)
+<span class="nc" id="L112">            .getUrl(entryUrl).justWait(5000)</span>
+<span class="nc" id="L113">            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L114">                By.xpath(&quot;//div[@id='top-link']//a[contains(text(),'登出')]&quot;)), 10000)</span>
+<span class="nc" id="L115">            .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(By.id(&quot;total_result&quot;)),</span>
+                10000)
+<span class="nc" id="L117">            .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.id(&quot;loading-cover&quot;)),</span>
+                10000)
+<span class="nc" id="L119">            .customMultiPhase(mp -&gt; ac -&gt; {</span>
+              // find target items
+<span class="nc" id="L121">              List&lt;WebElement&gt; itemList = ac.getWebDriver().findElements(By</span>
+<span class="nc" id="L122">                  .xpath(&quot;//table[contains(@class,'ttable')]/tbody/tr[not(@class) and not(@id)]&quot;));</span>
+<span class="nc" id="L123">              LOGGER.info(&quot;{} found {} items&quot;, getName(), itemList.size());</span>
+<span class="nc bnc" id="L124" title="All 4 branches missed.">              if (takeScreentshot &amp;&amp; itemList.size() == 0) {</span>
+<span class="nc" id="L125">                crawlerService.takeScreenShot(ac.getWebDriver());</span>
+              }
+
+              // process each item
+<span class="nc bnc" id="L129" title="All 2 branches missed.">              for (WebElement item : itemList) {</span>
+                try {
+<span class="nc" id="L131">                  WebElement urlElement =</span>
+<span class="nc" id="L132">                      item.findElement(By.xpath(&quot;.//a[contains(@class,'subject_href')]&quot;));</span>
+<span class="nc" id="L133">                  String url = urlElement.getAttribute(&quot;href&quot;).trim();</span>
+<span class="nc" id="L134">                  String title = urlElement.getText().trim();</span>
+
+<span class="nc" id="L136">                  WebElement imageUrlElement =</span>
+<span class="nc" id="L137">                      item.findElement(By.xpath(&quot;.//div[contains(@class,'houseImg')]/img&quot;));</span>
+<span class="nc" id="L138">                  String imageUrl = imageUrlElement.getAttribute(&quot;src&quot;);</span>
+
+<span class="nc" id="L140">                  WebElement typeElement = item.findElement(By.xpath(&quot;(./td)[6]&quot;));</span>
+<span class="nc" id="L141">                  String[] typeStrAry = typeElement.getText().trim().split(System.lineSeparator());</span>
+<span class="nc" id="L142">                  String type = typeStrAry[0];</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                  String layout = typeStrAry.length &gt; 1 ? typeStrAry[1] : &quot;&quot;;</span>
+
+<span class="nc" id="L145">                  WebElement communityElement = item</span>
+<span class="nc" id="L146">                      .findElement(By.xpath(&quot;(.//div[contains(@class,'houseAddress')]/span)[2]&quot;));</span>
+<span class="nc" id="L147">                  String community = communityElement.getText().trim();</span>
+
+<span class="nc" id="L149">                  List&lt;WebElement&gt; addressElementList =</span>
+<span class="nc" id="L150">                      item.findElements(By.xpath(&quot;.//span[contains(@class,'address_k')]/a&quot;));</span>
+<span class="nc" id="L151">                  String address = addressElementList.stream().map(s -&gt; s.getText().trim())</span>
+<span class="nc" id="L152">                      .collect(Collectors.joining(System.lineSeparator()));</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">                  if (address.isBlank()) {</span>
+<span class="nc" id="L154">                    WebElement addressElement =</span>
+<span class="nc" id="L155">                        item.findElement(By.xpath(&quot;.//div[contains(@class,'houseAddress')]&quot;));</span>
+<span class="nc" id="L156">                    address = addressElement.getText();</span>
+<span class="nc" id="L157">                    List&lt;WebElement&gt; toRemoveElementList =</span>
+<span class="nc" id="L158">                        item.findElements(By.xpath(&quot;.//div[contains(@class,'houseAddress')]&quot;</span>
+                            + &quot;/*[self::a or self::span or self::div]&quot;));
+<span class="nc" id="L160">                    List&lt;String&gt; toRemoveList = toRemoveElementList.stream().map(s -&gt; s.getText())</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">                        .sorted((x, y) -&gt; x.length() &lt; y.length() ? 1 : -1).toList();</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">                    for (String toRemove : toRemoveList) {</span>
+<span class="nc" id="L163">                      address = address.replace(toRemove, &quot;&quot;).trim();</span>
+<span class="nc" id="L164">                    }</span>
+                  }
+
+<span class="nc" id="L167">                  WebElement postDateElement = item.findElement(By.xpath(&quot;(./td)[2]&quot;));</span>
+<span class="nc" id="L168">                  String postDate = postDateElement.getText().trim();</span>
+
+<span class="nc" id="L170">                  WebElement floorElement = item.findElement(By.xpath(&quot;(./td)[5]&quot;));</span>
+<span class="nc" id="L171">                  String[] floorStrAry =</span>
+<span class="nc" id="L172">                      floorElement.getText().trim().split(System.lineSeparator());</span>
+<span class="nc" id="L173">                  String areaLand = floorStrAry[0];</span>
+<span class="nc bnc" id="L174" title="All 2 branches missed.">                  String floor = floorStrAry.length &gt; 1 ? floorStrAry[1] : &quot;&quot;;</span>
+
+<span class="nc" id="L176">                  WebElement ageElement = item.findElement(By.xpath(&quot;(./td)[7]&quot;));</span>
+<span class="nc" id="L177">                  String[] ageStrAry = ageElement.getText().trim().split(System.lineSeparator());</span>
+<span class="nc" id="L178">                  String age = ageStrAry[0];</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                  String parking = ageStrAry.length &gt; 1 ? ageStrAry[1] : &quot;&quot;;</span>
+
+<span class="nc" id="L181">                  List&lt;WebElement&gt; sourceElementList =</span>
+<span class="nc" id="L182">                      item.findElements(By.xpath(&quot;.//span[contains(@class,'source')]/a&quot;));</span>
+<span class="nc bnc" id="L183" title="All 2 branches missed.">                  String source = sourceElementList.size() &gt; 0</span>
+<span class="nc" id="L184">                      ? sourceElementList.stream().map(s -&gt; s.getText().trim()).distinct()</span>
+<span class="nc" id="L185">                          .collect(Collectors.joining(&quot;/&quot;))</span>
+<span class="nc" id="L186">                      : item.findElement(By.xpath(&quot;.//*[@class='houseSource']&quot;)).getText().trim();</span>
+
+<span class="nc" id="L188">                  WebElement priceElement = item.findElement(By.xpath(&quot;(./td)[3]&quot;));</span>
+<span class="nc" id="L189">                  String[] priceStrAry =</span>
+<span class="nc" id="L190">                      priceElement.getText().trim().split(System.lineSeparator());</span>
+<span class="nc" id="L191">                  String priceTotal = priceStrAry[0];</span>
+<span class="nc bnc" id="L192" title="All 2 branches missed.">                  String priceAveragePing = priceStrAry.length &gt; 1 ? priceStrAry[1] : &quot;&quot;;</span>
+
+<span class="nc" id="L194">                  WebElement areaElement = item.findElement(By.xpath(&quot;(./td)[4]&quot;));</span>
+<span class="nc" id="L195">                  String[] areaStrAry = areaElement.getText().trim().split(System.lineSeparator());</span>
+<span class="nc" id="L196">                  String areaTotal = areaStrAry[0];</span>
+<span class="nc bnc" id="L197" title="All 2 branches missed.">                  String areaMain = areaStrAry.length &gt; 1 ? areaStrAry[1] : &quot;&quot;;</span>
+
+<span class="nc" id="L199">                  String description = title + System.lineSeparator() + type + &quot; &quot; + layout + &quot; &quot;</span>
+                      + age + &quot;y &quot; + areaTotal + &quot; &quot; + areaMain + &quot; &quot; + floor + &quot; &quot; + community
+<span class="nc" id="L201">                      + &quot; &quot; + address + &quot; &quot; + postDate + &quot; &quot; + parking + System.lineSeparator()</span>
+                      + priceTotal + &quot; &quot; + priceAveragePing;
+
+                  // save for each property
+                  BigFunService bigFunService =
+<span class="nc" id="L206">                      CrawlerBeanConfiguration.getAppContext().getBean(BigFunService.class);</span>
+<span class="nc" id="L207">                  RealEstate toAdd = newRealEstate(url, imageUrl, title, type, layout, community,</span>
+                      address, floor, age, parking, priceTotal, priceAveragePing, areaLand,
+                      areaTotal, areaMain, source, postDate, botName);
+<span class="nc" id="L210">                  boolean isExist = bigFunService.existsRealEstate(toAdd.getUrl());</span>
+<span class="nc bnc" id="L211" title="All 2 branches missed.">                  if (!isExist) {</span>
+<span class="nc" id="L212">                    bigFunService.addRealEstate(toAdd);</span>
+<span class="nc" id="L213">                    LOGGER.info(String.format(&quot;%s:%s added&quot;, RealEstate.class.getName(), url));</span>
+                    MeterRegistry meterRegistry =
+<span class="nc" id="L215">                        CrawlerBeanConfiguration.getAppContext().getBean(MeterRegistry.class);</span>
+<span class="nc" id="L216">                    String meterNameNew = &quot;crawler_bigfun_new_real_estate&quot;;</span>
+<span class="nc" id="L217">                    String meterNameSendPhoto =</span>
+                        &quot;crawler_bigfun_new_real_estate.telegram_send_photo&quot;;
+<span class="nc" id="L219">                    meterRegistry.counter(meterNameNew).increment();</span>
+                    if (false &amp;&amp; !&quot;&quot;.equals(chatId) &amp;&amp; crawlerService.telegramSendPhoto(chatId,
+                        chatToken, String.format(&quot;%s %s&quot;, url, description), imageUrl).block()) {
+                      meterRegistry.counter(meterNameSendPhoto).increment();
+
+                      // telegram rate limit
+                      Thread.sleep(3000);
+                    }
+                  }
+<span class="nc" id="L228">                } catch (Exception ex) {</span>
+<span class="nc" id="L229">                  LOGGER.warn(RealEstate.class.getName() + &quot; element parse error&quot;, ex);</span>
+<span class="nc" id="L230">                }</span>
+<span class="nc" id="L231">              }</span>
+
+              // to next page
+              try {
+<span class="nc" id="L235">                WebElement nextLinkElement = ac.getWebDriver().findElement(By.xpath(</span>
+                    &quot;//li[contains(@class,'pagination-item-active')]/following-sibling::li&quot;));
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                if (nextLinkElement.getAttribute(&quot;class&quot;).contains(&quot;pagination-item-disable&quot;)) {</span>
+<span class="nc" id="L238">                  mp.noNextPhase();</span>
+                } else {
+<span class="nc" id="L240">                  nextLinkElement.click();</span>
+<span class="nc" id="L241">                  FluentWait&lt;WebDriver&gt; wait =</span>
+<span class="nc" id="L242">                      new FluentWait&lt;&gt;(ac.getWebDriver()).withTimeout(Duration.ofMillis(10000));</span>
+<span class="nc" id="L243">                  wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L244">                      By.xpath(&quot;//div[@id='top-link']//a[contains(text(),'登出')]&quot;)));</span>
+<span class="nc" id="L245">                  wait.until(</span>
+<span class="nc" id="L246">                      ExpectedConditions.visibilityOfAllElementsLocatedBy(By.id(&quot;total_result&quot;)));</span>
+<span class="nc" id="L247">                  wait.until(</span>
+<span class="nc" id="L248">                      ExpectedConditions.invisibilityOfElementLocated(By.id(&quot;loading-cover&quot;)));</span>
+                }
+<span class="nc" id="L250">              } catch (ElementClickInterceptedException ex) {</span>
+<span class="nc" id="L251">                LOGGER.info(&quot;{} next link error, retrying...&quot;, getName());</span>
+<span class="nc" id="L252">              }</span>
+<span class="nc" id="L253">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L254" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L255">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L257">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+                }
+              }
+<span class="nc" id="L260">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L261">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L262">              LOGGER.info(&quot;{} succeed:&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L263">            }).onDone(ac -&gt; {</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">              if (ac.isFail()) {</span>
+                // alert for some cases
+<span class="nc" id="L266">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
+<span class="nc bnc" id="L268" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
+                  // NOTHING TODO
+                }
+              }
+<span class="nc" id="L272">            }).build(this, BigFunCrawler.class.getName() + &quot;(&quot; + entryUrl + &quot;)&quot;);</span>
+<span class="nc" id="L273">      } catch (Exception ex) {</span>
+<span class="nc" id="L274">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L275">      }</span>
+<span class="nc" id="L276">    }</span>
+
+    private static RealEstate newRealEstate(String url, String imageUrl, String title, String type,
+        String layout, String community, String address, String floor, String age, String parking,
+        String priceTotal, String priceAveragePing, String areaLand, String areaTotal,
+        String areaMain, String source, String postDate, String maintainer) {
+<span class="nc" id="L282">      RealEstate obj = new RealEstate();</span>
+<span class="nc" id="L283">      obj.setUrl(url);</span>
+<span class="nc" id="L284">      obj.setImageUrl(imageUrl);</span>
+<span class="nc" id="L285">      obj.setTitle(title);</span>
+<span class="nc" id="L286">      obj.setType(type);</span>
+<span class="nc" id="L287">      obj.setLayout(layout);</span>
+<span class="nc bnc" id="L288" title="All 2 branches missed.">      if (community.equals(&quot;社區&quot;)) {</span>
+<span class="nc" id="L289">        community = &quot;&quot;;</span>
+      }
+<span class="nc" id="L291">      obj.setCommunity(community);</span>
+<span class="nc" id="L292">      obj.setAddress(address);</span>
+<span class="nc" id="L293">      obj.setFloor(floor);</span>
+<span class="nc bnc" id="L294" title="All 4 branches missed.">      if (!age.isBlank() &amp;&amp; !age.contains(&quot;-&quot;)) {</span>
+<span class="nc" id="L295">        obj.setAge(new BigDecimal(age));</span>
+      }
+<span class="nc" id="L297">      obj.setParking(parking);</span>
+<span class="nc bnc" id="L298" title="All 4 branches missed.">      if (!priceTotal.isBlank() &amp;&amp; !priceTotal.contains(&quot;-&quot;)) {</span>
+<span class="nc" id="L299">        obj.setPriceTotal(new BigDecimal(priceTotal.replace(&quot;萬&quot;, &quot;&quot;)));</span>
+      }
+<span class="nc bnc" id="L301" title="All 4 branches missed.">      if (!priceAveragePing.isBlank() &amp;&amp; !priceAveragePing.contains(&quot;-&quot;)) {</span>
+<span class="nc" id="L302">        obj.setPriceAveragePing(new BigDecimal(priceAveragePing.replace(&quot;萬/坪&quot;, &quot;&quot;)));</span>
+      }
+<span class="nc bnc" id="L304" title="All 4 branches missed.">      if (!areaLand.isBlank() &amp;&amp; !areaLand.contains(&quot;-&quot;)) {</span>
+<span class="nc" id="L305">        obj.setAreaLand(new BigDecimal(areaLand.replace(&quot;坪&quot;, &quot;&quot;)));</span>
+      }
+<span class="nc bnc" id="L307" title="All 4 branches missed.">      if (!areaTotal.isBlank() &amp;&amp; !areaTotal.contains(&quot;-&quot;)) {</span>
+<span class="nc" id="L308">        obj.setAreaTotal(new BigDecimal(areaTotal.replace(&quot;坪&quot;, &quot;&quot;)));</span>
+      }
+<span class="nc bnc" id="L310" title="All 4 branches missed.">      if (!areaMain.isBlank() &amp;&amp; !areaMain.contains(&quot;-&quot;)) {</span>
+<span class="nc" id="L311">        obj.setAreaMain(new BigDecimal(areaMain.replace(&quot;坪&quot;, &quot;&quot;)));</span>
+      }
+<span class="nc" id="L313">      obj.setSite(&quot;BigFun&quot;);</span>
+<span class="nc" id="L314">      obj.setSource(source);</span>
+<span class="nc bnc" id="L315" title="All 2 branches missed.">      if (!postDate.isBlank()) {</span>
+<span class="nc" id="L316">        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;);</span>
+<span class="nc" id="L317">        obj.setPostDate(LocalDateTime.parse(postDate + &quot; 00:00:00&quot;, formatter));</span>
+      }
+<span class="nc" id="L319">      obj.setCreateUser(maintainer);</span>
+<span class="nc" id="L320">      obj.setCreateDate(LocalDateTime.now());</span>
+<span class="nc" id="L321">      return obj;</span>
+    }
+
+    public ResultStatus getResultStatus() {
+<span class="nc" id="L325">      return this.resultStatus;</span>
+    }
+
+    public String getMessage() {
+<span class="nc" id="L329">      return message;</span>
+    }
+
+    public void setMessage(String message) {
+<span class="nc" id="L333">      this.message = message;</span>
+<span class="nc" id="L334">    }</span>
+  }
+
+<span class="nc" id="L337">  private static enum ResultStatus {</span>
+<span class="nc" id="L338">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
+        &quot;UnknownFail&quot;);
+
+    private final String name;
+
+<span class="nc" id="L343">    private ResultStatus(String name) {</span>
+<span class="nc" id="L344">      this.name = name;</span>
+<span class="nc" id="L345">    }</span>
+
+    @Override
+    public String toString() {
+<span class="nc" id="L349">      return this.name;</span>
+    }
+  }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

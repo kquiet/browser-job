@@ -150,89 +150,91 @@ public class Sale591Controller extends JobBase {
 <span class="nc" id="L150">                  boolean isExist = house591Service.existsSaleHouse(toAdd.getUrl());</span>
 <span class="nc bnc" id="L151" title="All 2 branches missed.">                  if (!isExist) {</span>
 <span class="nc" id="L152">                    house591Service.addSaleHouse(toAdd);</span>
-<span class="nc" id="L153">                    LOGGER.info(String.format(&quot;SaleHouse:%s added&quot;, url));</span>
+<span class="nc" id="L153">                    LOGGER.info(String.format(&quot;%s:%s added&quot;, SaleHouse.class.getName(), url));</span>
                     MeterRegistry meterRegistry =
 <span class="nc" id="L155">                        CrawlerBeanConfiguration.getAppContext().getBean(MeterRegistry.class);</span>
-<span class="nc" id="L156">                    meterRegistry.counter(&quot;new_sale_house&quot;).increment();</span>
-<span class="nc bnc" id="L157" title="All 2 branches missed.">                    if (!&quot;&quot;.equals(chatId)</span>
+<span class="nc" id="L156">                    String meterNameNew = &quot;crawler_591_new_sale_house&quot;;</span>
+<span class="nc" id="L157">                    String meterNameSendPhoto = &quot;crawler_591_new_sale_house.telegram_send_photo&quot;;</span>
+<span class="nc" id="L158">                    meterRegistry.counter(meterNameNew).increment();</span>
+<span class="nc bnc" id="L159" title="All 2 branches missed.">                    if (!&quot;&quot;.equals(chatId)</span>
                         &amp;&amp; crawlerService
-<span class="nc" id="L159">                            .telegramSendPhoto(chatId, chatToken,</span>
-<span class="nc" id="L160">                                String.format(&quot;%s %s %s&quot;, url, description, price), imageUrl)</span>
-<span class="nc bnc" id="L161" title="All 2 branches missed.">                            .block()) {</span>
-<span class="nc" id="L162">                      meterRegistry.counter(&quot;new_sale_house.telegram_sendPhoto&quot;).increment();</span>
+<span class="nc" id="L161">                            .telegramSendPhoto(chatId, chatToken,</span>
+<span class="nc" id="L162">                                String.format(&quot;%s %s %s&quot;, url, description, price), imageUrl)</span>
+<span class="nc bnc" id="L163" title="All 2 branches missed.">                            .block()) {</span>
+<span class="nc" id="L164">                      meterRegistry.counter(meterNameSendPhoto).increment();</span>
 
                       // telegram rate limit
-<span class="nc" id="L165">                      Thread.sleep(3000);</span>
+<span class="nc" id="L167">                      Thread.sleep(3000);</span>
                     }
                   }
-<span class="nc" id="L168">                } catch (Exception ex) {</span>
-<span class="nc" id="L169">                  LOGGER.warn(&quot;SaleHouse element parse error&quot;, ex);</span>
-<span class="nc" id="L170">                }</span>
-<span class="nc" id="L171">              }</span>
-<span class="nc" id="L172">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
-<span class="nc bnc" id="L173" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
-<span class="nc" id="L174">                List&lt;Exception&gt; errList = ac.getErrors();</span>
-<span class="nc bnc" id="L175" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
-<span class="nc" id="L176">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
+<span class="nc" id="L170">                } catch (Exception ex) {</span>
+<span class="nc" id="L171">                  LOGGER.warn(SaleHouse.class.getName() + &quot; element parse error&quot;, ex);</span>
+<span class="nc" id="L172">                }</span>
+<span class="nc" id="L173">              }</span>
+<span class="nc" id="L174">            }).returnToComposerBuilder().onFail(ac -&gt; {</span>
+<span class="nc bnc" id="L175" title="All 4 branches missed.">              if (this.getMessage() == null || &quot;&quot;.equals(this.getMessage())) {</span>
+<span class="nc" id="L176">                List&lt;Exception&gt; errList = ac.getErrors();</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                if (errList.size() &gt; 0) {</span>
+<span class="nc" id="L178">                  this.setMessage(errList.get(errList.size() - 1).getMessage());</span>
                 }
               }
-<span class="nc" id="L179">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
-<span class="nc" id="L180">            }).onSuccess(ac -&gt; {</span>
-<span class="nc" id="L181">              LOGGER.info(&quot;{} succeed:&quot;, getName(), this.getMessage());</span>
-<span class="nc" id="L182">            }).onDone(ac -&gt; {</span>
-<span class="nc bnc" id="L183" title="All 2 branches missed.">              if (ac.isFail()) {</span>
+<span class="nc" id="L181">              LOGGER.info(&quot;{} fail: {}&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L182">            }).onSuccess(ac -&gt; {</span>
+<span class="nc" id="L183">              LOGGER.info(&quot;{} succeed:&quot;, getName(), this.getMessage());</span>
+<span class="nc" id="L184">            }).onDone(ac -&gt; {</span>
+<span class="nc bnc" id="L185" title="All 2 branches missed.">              if (ac.isFail()) {</span>
                 // alert for some cases
-<span class="nc" id="L185">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
-<span class="nc bnc" id="L186" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
-<span class="nc bnc" id="L187" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
+<span class="nc" id="L187">                if (Arrays.asList(ResultStatus.UnknownFail, ResultStatus.AlertFail)</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                    .contains(this.getResultStatus())</span>
+<span class="nc bnc" id="L189" title="All 4 branches missed.">                    &amp;&amp; (ac.getFailUrl() != null || ac.getFailPage() != null)) {</span>
                   // NOTHING TODO
                 }
               }
-<span class="nc" id="L191">            }).build(this, &quot;Sale591Crawler(&quot; + entryUrl + &quot;)&quot;);</span>
-<span class="nc" id="L192">      } catch (Exception ex) {</span>
-<span class="nc" id="L193">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
-<span class="nc" id="L194">      }</span>
-<span class="nc" id="L195">    }</span>
+<span class="nc" id="L193">            }).build(this, Sale591Crawler.class.getName() + &quot;(&quot; + entryUrl + &quot;)&quot;);</span>
+<span class="nc" id="L194">      } catch (Exception ex) {</span>
+<span class="nc" id="L195">        LOGGER.error(&quot;Create crawler error!&quot;, ex);</span>
+<span class="nc" id="L196">      }</span>
+<span class="nc" id="L197">    }</span>
 
     private static SaleHouse newSaleHouse(String url, String imageUrl, String description,
         String price, String maintainer) {
-<span class="nc" id="L199">      SaleHouse obj = new SaleHouse();</span>
-<span class="nc" id="L200">      obj.setUrl(url);</span>
-<span class="nc" id="L201">      obj.setSite(&quot;591&quot;);</span>
-<span class="nc" id="L202">      obj.setImageUrl(imageUrl);</span>
-<span class="nc" id="L203">      obj.setDescription(description);</span>
-<span class="nc" id="L204">      obj.setPrice(price);</span>
-<span class="nc" id="L205">      obj.setCreateuser(maintainer);</span>
-<span class="nc" id="L206">      obj.setCreatedate(LocalDateTime.now());</span>
-<span class="nc" id="L207">      return obj;</span>
+<span class="nc" id="L201">      SaleHouse obj = new SaleHouse();</span>
+<span class="nc" id="L202">      obj.setUrl(url);</span>
+<span class="nc" id="L203">      obj.setSite(&quot;591&quot;);</span>
+<span class="nc" id="L204">      obj.setImageUrl(imageUrl);</span>
+<span class="nc" id="L205">      obj.setDescription(description);</span>
+<span class="nc" id="L206">      obj.setPrice(price);</span>
+<span class="nc" id="L207">      obj.setCreateuser(maintainer);</span>
+<span class="nc" id="L208">      obj.setCreatedate(LocalDateTime.now());</span>
+<span class="nc" id="L209">      return obj;</span>
     }
 
     public ResultStatus getResultStatus() {
-<span class="nc" id="L211">      return this.resultStatus;</span>
+<span class="nc" id="L213">      return this.resultStatus;</span>
     }
 
     public String getMessage() {
-<span class="nc" id="L215">      return message;</span>
+<span class="nc" id="L217">      return message;</span>
     }
 
     public void setMessage(String message) {
-<span class="nc" id="L219">      this.message = message;</span>
-<span class="nc" id="L220">    }</span>
+<span class="nc" id="L221">      this.message = message;</span>
+<span class="nc" id="L222">    }</span>
   }
 
-<span class="nc" id="L223">  private static enum ResultStatus {</span>
-<span class="nc" id="L224">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
+<span class="nc" id="L225">  private static enum ResultStatus {</span>
+<span class="nc" id="L226">    AlertFail(&quot;AlertFail&quot;), WaitingToDo(&quot;WaitingToDo&quot;), Success(&quot;Success&quot;), UnknownFail(</span>
         &quot;UnknownFail&quot;);
 
     private final String name;
 
-<span class="nc" id="L229">    private ResultStatus(String name) {</span>
-<span class="nc" id="L230">      this.name = name;</span>
-<span class="nc" id="L231">    }</span>
+<span class="nc" id="L231">    private ResultStatus(String name) {</span>
+<span class="nc" id="L232">      this.name = name;</span>
+<span class="nc" id="L233">    }</span>
 
     @Override
     public String toString() {
-<span class="nc" id="L235">      return this.name;</span>
+<span class="nc" id="L237">      return this.name;</span>
     }
   }
 }
