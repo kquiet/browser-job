@@ -153,12 +153,14 @@ public class BigFunController extends JobBase {
                   if (address.isBlank()) {
                     WebElement addressElement =
                         item.findElement(By.xpath(".//div[contains(@class,'houseAddress')]"));
+                    address = addressElement.getText();
                     List<WebElement> toRemoveElementList =
                         item.findElements(By.xpath(".//div[contains(@class,'houseAddress')]"
                             + "/*[self::a or self::span or self::div]"));
-                    address = addressElement.getText();
-                    for (WebElement toRemoveElement : toRemoveElementList) {
-                      address = address.replace(toRemoveElement.getText(), "").trim();
+                    List<String> toRemoveList = toRemoveElementList.stream().map(s -> s.getText())
+                        .sorted((x, y) -> x.length() < y.length() ? 1 : -1).toList();
+                    for (String toRemove : toRemoveList) {
+                      address = address.replace(toRemove, "").trim();
                     }
                   }
 

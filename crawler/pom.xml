@@ -14,21 +14,21 @@
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
 
-    <opentelemetry.instrumentation.annotation.version>1.23.0</opentelemetry.instrumentation.annotation.version>
-    <slf4j.version>2.0.6</slf4j.version>
-    <selenium.version>4.8.1</selenium.version>
+    <opentelemetry.instrumentation.annotation.version>1.24.0</opentelemetry.instrumentation.annotation.version>
+    <slf4j.version>2.0.7</slf4j.version>
+    <selenium.version>4.8.3</selenium.version>
     <hecate.version>0.0.4</hecate.version>
-    <browserscheduler.version>2.0.6</browserscheduler.version>
-    <auto-browser.version>2.0.5</auto-browser.version>
-    <spring.boot.version>3.0.3</spring.boot.version>
-    <flyway.version>9.15.0</flyway.version>
+    <browserscheduler.version>2.0.7</browserscheduler.version>
+    <auto-browser.version>2.0.6</auto-browser.version>
+    <spring.boot.version>3.0.5</spring.boot.version>
+    <flyway.version>9.16.3</flyway.version>
 
     <mysql-connector-j.version>8.0.32</mysql-connector-j.version>
     <logstash-logback-encoder.version>7.2</logstash-logback-encoder.version>
 
     <junit.version>5.9.2</junit.version>
-    <mockito.version>5.1.1</mockito.version>
-    <testcontainers.version>1.17.6</testcontainers.version>
+    <mockito.version>5.2.0</mockito.version>
+    <testcontainers.version>1.18.0</testcontainers.version>
     <mockwebserver.version>4.10.0</mockwebserver.version>
   </properties>
 
