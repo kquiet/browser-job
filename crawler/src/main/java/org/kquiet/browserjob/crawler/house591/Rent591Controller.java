@@ -1,6 +1,7 @@
 package org.kquiet.browserjob.crawler.house591;
 
 import io.micrometer.core.instrument.MeterRegistry;
+import io.opentelemetry.instrumentation.annotations.WithSpan;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
@@ -33,6 +34,7 @@ public class Rent591Controller extends JobBase {
   }
 
   @Override
+  @WithSpan
   public void run() {
     try {
       Rent591Crawler bac = new Rent591Crawler(this);
