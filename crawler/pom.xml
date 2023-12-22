@@ -7,7 +7,7 @@
     <version>0.1.0</version>
   </parent>
   <artifactId>crawler</artifactId>
-  <version>0.1.13</version>
+  <version>0.1.14-SNAPSHOT</version>
   <packaging>jar</packaging>
   <url>https://github.com/kquiet/browser-job/crawler</url>
 
