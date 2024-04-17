@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SaleYungchingScript.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.house.script</a> &gt; <span class="el_source">SaleYungchingScript.java</span></div><h1>SaleYungchingScript.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.house.script;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
+import org.kquiet.browserjob.crawler.service.CrawlerService;
+import org.kquiet.browserscheduler.JobBase;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * SaleYungching script builder.
+ *
+ * @author monkey
+ *
+ */
+public class SaleYungchingScript extends Sale591Script {
+
+  public SaleYungchingScript(JobBase job) {
+<span class="nc" id="L25">    super(job);</span>
+<span class="nc" id="L26">  }</span>
+
+<span class="nc" id="L28">  private static final Logger LOGGER = LoggerFactory.getLogger(SaleYungchingScript.class);</span>
+
+<span class="nc" id="L30">  private CrawlerService crawlerService =</span>
+<span class="nc" id="L31">      CrawlerBeanConfiguration.getAppContext().getBean(CrawlerService.class);</span>
+
+  @Override
+  public void accept(Map&lt;String, String&gt; configMap, ActionComposerBuilder scriptBuilder) {
+<span class="nc" id="L35">    String botName = configMap.get(&quot;botName&quot;);</span>
+<span class="nc" id="L36">    String site = configMap.get(&quot;site&quot;);</span>
+<span class="nc" id="L37">    String entryUrl = configMap.get(&quot;entryUrl&quot;);</span>
+<span class="nc" id="L38">    String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L39">    String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+<span class="nc" id="L40">    boolean takeScreentshot = Boolean.parseBoolean(configMap.get(&quot;takeScreenshot&quot;));</span>
+
+<span class="nc" id="L42">    scriptBuilder.prepareActionSequence().getUrl(entryUrl).justWait(3000)</span>
+<span class="nc" id="L43">        .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L44">            By.xpath(&quot;//li[contains(@class,'m-list-item')]&quot;)), 10000)</span>
+<span class="nc" id="L45">        .custom(ac -&gt; {</span>
+<span class="nc" id="L46">          List&lt;WebElement&gt; propertyList =</span>
+<span class="nc" id="L47">              ac.getWebDriver().findElements(By.xpath(&quot;//li[contains(@class,'m-list-item')]&quot;));</span>
+<span class="nc" id="L48">          LOGGER.info(&quot;{} found {} properties&quot;, getName(), propertyList.size());</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">          if (takeScreentshot &amp;&amp; propertyList.size() == 0) {</span>
+<span class="nc" id="L50">            crawlerService.takeScreenShot(ac.getWebDriver());</span>
+          }
+
+<span class="nc bnc" id="L53" title="All 2 branches missed.">          for (WebElement property : propertyList) {</span>
+            try {
+<span class="nc" id="L55">              WebElement urlE = property.findElement(By.xpath(&quot;./a[contains(@class,'item-img')]&quot;));</span>
+<span class="nc" id="L56">              String url = urlE.getAttribute(&quot;href&quot;).trim();</span>
+
+<span class="nc" id="L58">              WebElement imageUrlE = urlE.findElement(By.xpath(&quot;(.//img)[1]&quot;));</span>
+<span class="nc" id="L59">              String imageUrl = imageUrlE.getAttribute(&quot;src&quot;);</span>
+
+<span class="nc" id="L61">              WebElement descRootE =</span>
+<span class="nc" id="L62">                  property.findElement(By.xpath(&quot;./div[contains(@class,'item-info')]&quot;));</span>
+<span class="nc" id="L63">              WebElement descTitleE =</span>
+<span class="nc" id="L64">                  descRootE.findElement(By.xpath(&quot;./a[contains(@class,'item-title')]/h3&quot;));</span>
+<span class="nc" id="L65">              String descTitle = descTitleE.getText().trim();</span>
+<span class="nc" id="L66">              WebElement descAddressE = descRootE</span>
+<span class="nc" id="L67">                  .findElement(By.xpath(&quot;(./div[contains(@class,'item-description')]/span)[1]&quot;));</span>
+<span class="nc" id="L68">              String descAddress = descAddressE.getText().trim();</span>
+<span class="nc" id="L69">              List&lt;WebElement&gt; descDetailElementList =</span>
+<span class="nc" id="L70">                  descRootE.findElements(By.xpath(&quot;./ul[contains(@class,'item-info-detail')]/li&quot;));</span>
+<span class="nc" id="L71">              String descDetail = descDetailElementList.stream().map(s -&gt; s.getText().trim())</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">                  .filter(s -&gt; !s.isBlank()).collect(Collectors.joining(&quot; &quot;));</span>
+<span class="nc" id="L73">              List&lt;WebElement&gt; descTagElementList =</span>
+<span class="nc" id="L74">                  descRootE.findElements(By.xpath(&quot;./div[contains(@class,'item-tags')]/span&quot;));</span>
+<span class="nc" id="L75">              String descTag = descTagElementList.stream().map(s -&gt; s.getText().trim())</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">                  .filter(s -&gt; !s.isBlank()).collect(Collectors.joining(&quot; &quot;));</span>
+
+<span class="nc" id="L78">              String description = descTitle + System.lineSeparator() + descAddress</span>
+<span class="nc" id="L79">                  + System.lineSeparator() + descDetail + System.lineSeparator() + descTag;</span>
+
+<span class="nc" id="L81">              WebElement priceE = property.findElement(</span>
+<span class="nc" id="L82">                  By.xpath(&quot;./div[contains(@class,'item-price')]/div[contains(@class,'price')]&quot;));</span>
+<span class="nc" id="L83">              String price = priceE.getText().trim();</span>
+
+              // process for parsed element
+<span class="nc" id="L86">              this.processSaleHouse(site, url, imageUrl, description, price, botName, chatId,</span>
+                  chatToken);
+<span class="nc" id="L88">            } catch (Exception ex) {</span>
+<span class="nc" id="L89">              LOGGER.warn(this.getClass().getName() + &quot; encounter error&quot;, ex);</span>
+<span class="nc" id="L90">            }</span>
+<span class="nc" id="L91">          }</span>
+<span class="nc" id="L92">        }).returnToComposerBuilder();</span>
+<span class="nc" id="L93">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

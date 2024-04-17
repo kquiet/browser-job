@@ -3,7 +3,8 @@
 import javax.sql.DataSource;
 import org.kquiet.browserjob.crawler.bigfun.BigFunService;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
-import org.kquiet.browserjob.crawler.house591.House591Service;
+import org.kquiet.browserjob.crawler.house.service.HouseService;
+import org.kquiet.browserjob.crawler.service.CrawlerService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -31,16 +32,16 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
     entityManagerFactoryRef = &quot;crawlerEntityManagerFactory&quot;,
     transactionManagerRef = &quot;crawlerTransactionManager&quot;)
 @EnableTransactionManagement
-<span class="fc" id="L34">public class CrawlerBeanConfiguration implements ApplicationContextAware {</span>
+<span class="fc" id="L35">public class CrawlerBeanConfiguration implements ApplicationContextAware {</span>
   private static ApplicationContext context;
 
   @Override
   public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-<span class="fc" id="L39">    context = applicationContext;</span>
-<span class="fc" id="L40">  }</span>
+<span class="fc" id="L40">    context = applicationContext;</span>
+<span class="fc" id="L41">  }</span>
 
   public static ApplicationContext getAppContext() {
-<span class="nc" id="L43">    return context;</span>
+<span class="nc" id="L44">    return context;</span>
   }
 
   /**
@@ -51,7 +52,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
   @Bean(&quot;crawlerDataSource&quot;)
   @ConfigurationProperties(prefix = &quot;crawler.data-source&quot;)
   public DataSource dataSource() {
-<span class="fc" id="L54">    return DataSourceBuilder.create().build();</span>
+<span class="fc" id="L55">    return DataSourceBuilder.create().build();</span>
   }
 
   /**
@@ -64,9 +65,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
   @Bean(&quot;crawlerEntityManagerFactory&quot;)
   public LocalContainerEntityManagerFactoryBean entityManagerFactory(
       @Qualifier(&quot;crawlerDataSource&quot;) DataSource dataSource, EntityManagerFactoryBuilder builder) {
-<span class="fc" id="L67">    return builder //</span>
-<span class="fc" id="L68">        .dataSource(dataSource).packages(CrawlerBeanConfiguration.class.getPackageName())</span>
-<span class="fc" id="L69">        .persistenceUnit(&quot;crawlerPersistenceUnit&quot;).build();</span>
+<span class="fc" id="L68">    return builder //</span>
+<span class="fc" id="L69">        .dataSource(dataSource).packages(CrawlerBeanConfiguration.class.getPackageName())</span>
+<span class="fc" id="L70">        .persistenceUnit(&quot;crawlerPersistenceUnit&quot;).build();</span>
   }
 
   /**
@@ -79,29 +80,29 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
   public PlatformTransactionManager transactionManager(
       @Qualifier(&quot;crawlerEntityManagerFactory&quot;)
       LocalContainerEntityManagerFactoryBean entityManagerFactory) {
-<span class="fc" id="L82">    return new JpaTransactionManager(entityManagerFactory.getObject());</span>
+<span class="fc" id="L83">    return new JpaTransactionManager(entityManagerFactory.getObject());</span>
   }
 
   @Bean()
   public CrawlerDao crawlerDao() {
-<span class="fc" id="L87">    return new CrawlerDao();</span>
+<span class="fc" id="L88">    return new CrawlerDao();</span>
   }
 
   @Bean()
   public CrawlerService crawlerService() {
-<span class="fc" id="L92">    return new CrawlerService();</span>
+<span class="fc" id="L93">    return new CrawlerService();</span>
   }
 
   @Bean()
   @Scope
-  public House591Service house591Service() {
-<span class="fc" id="L98">    return new House591Service();</span>
+  public HouseService houseService() {
+<span class="fc" id="L99">    return new HouseService();</span>
   }
   
   @Bean()
   @Scope
   public BigFunService bigFunService() {
-<span class="fc" id="L104">    return new BigFunService();</span>
+<span class="fc" id="L105">    return new BigFunService();</span>
   }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
