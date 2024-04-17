@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler.house591.entity;
+package org.kquiet.browserjob.crawler.house.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,14 +8,14 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
- * house for rent.
+ * house for sale.
  *
  * @author monkey
  *
  */
 @Entity
-@Table(name = "rent_house")
-public class RentHouse {
+@Table(name = "sale_house")
+public class SaleHouse {
   @Id
   @Column(name = "url")
   private String url;
@@ -99,7 +99,7 @@ public class RentHouse {
     if (this == obj) {
       return true;
     }
-    if (obj != null && obj instanceof RentHouse temp) {
+    if (obj != null && obj instanceof SaleHouse temp) {
       return Objects.equals(url, temp.getUrl());
     } else {
       return false;
@@ -116,7 +116,7 @@ public class RentHouse {
     return String.format(
         "%s[url=%s, site='%s', imageUrl='%s', "
             + "description='%s', price='%s', createuser='%s', createdate='%s']",
-        RentHouse.class.getTypeName(), url, site, imageUrl, description, price, createuser,
+        SaleHouse.class.getTypeName(), url, site, imageUrl, description, price, createuser,
         createdate);
   }
 }

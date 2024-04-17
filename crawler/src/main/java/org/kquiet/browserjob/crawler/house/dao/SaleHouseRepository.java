@@ -1,6 +1,6 @@
-package org.kquiet.browserjob.crawler.house591.dao;
+package org.kquiet.browserjob.crawler.house.dao;
 
-import org.kquiet.browserjob.crawler.house591.entity.SaleHouse;
+import org.kquiet.browserjob.crawler.house.entity.SaleHouse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

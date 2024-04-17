@@ -3,7 +3,8 @@ package org.kquiet.browserjob.crawler;
 import javax.sql.DataSource;
 import org.kquiet.browserjob.crawler.bigfun.BigFunService;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
-import org.kquiet.browserjob.crawler.house591.House591Service;
+import org.kquiet.browserjob.crawler.house.service.HouseService;
+import org.kquiet.browserjob.crawler.service.CrawlerService;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -94,8 +95,8 @@ public class CrawlerBeanConfiguration implements ApplicationContextAware {
 
   @Bean()
   @Scope
-  public House591Service house591Service() {
-    return new House591Service();
+  public HouseService houseService() {
+    return new HouseService();
   }
   
   @Bean()

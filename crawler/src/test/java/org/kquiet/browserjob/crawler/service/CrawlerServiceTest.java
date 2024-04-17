@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.service;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -17,6 +17,7 @@ import org.kquiet.browserjob.crawler.dao.BotConfigRepository;
 import org.kquiet.browserjob.crawler.dao.CrawlerDao;
 import org.kquiet.browserjob.crawler.entity.BotConfig;
 import org.kquiet.browserjob.crawler.entity.BotId;
+import org.kquiet.browserjob.crawler.service.CrawlerService;
 import org.kquiet.hecate.api.telegram.SendPhotoRequest;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
