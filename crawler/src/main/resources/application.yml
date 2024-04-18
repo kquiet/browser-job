@@ -74,6 +74,15 @@ browser-scheduler:
     scheduleAfterExec: true
     parameters:
       takeScreenshot: "true"
+  - name: SaleSinyiA
+    enable: true
+    impl: org.kquiet.browserjob.crawler.house.controller.SaleSinyiController
+    dailyStart: "00:00:00"
+    dailyEnd: "00:00:00"
+    interval: 600
+    scheduleAfterExec: true
+    parameters:
+      takeScreenshot: "true"
   - name: Sale591A
     enable: false
     impl: org.kquiet.browserjob.crawler.house.controller.Sale591Controller
