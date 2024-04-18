@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SaleSinyiScript.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">org.kquiet.browserjob.crawler.house.script</a> &gt; <span class="el_source">SaleSinyiScript.java</span></div><h1>SaleSinyiScript.java</h1><pre class="source lang-java linenums">package org.kquiet.browserjob.crawler.house.script;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.kquiet.browser.ActionComposerBuilder;
+import org.kquiet.browserscheduler.JobBase;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * SaleYungching script builder.
+ *
+ * @author monkey
+ *
+ */
+public class SaleSinyiScript extends Sale591Script {
+
+  public SaleSinyiScript(JobBase job) {
+<span class="nc" id="L23">    super(job);</span>
+<span class="nc" id="L24">  }</span>
+
+<span class="nc" id="L26">  private static final Logger LOGGER = LoggerFactory.getLogger(SaleSinyiScript.class);</span>
+
+  @Override
+  public void accept(Map&lt;String, String&gt; configMap, ActionComposerBuilder scriptBuilder) {
+<span class="nc" id="L30">    String botName = configMap.get(&quot;botName&quot;);</span>
+<span class="nc" id="L31">    String site = configMap.get(&quot;site&quot;);</span>
+<span class="nc" id="L32">    String entryUrl = configMap.get(&quot;entryUrl&quot;);</span>
+<span class="nc" id="L33">    String chatId = configMap.get(&quot;chatId&quot;);</span>
+<span class="nc" id="L34">    String chatToken = configMap.get(&quot;chatToken&quot;);</span>
+<span class="nc" id="L35">    boolean takeScreentshot = Boolean.parseBoolean(configMap.get(&quot;takeScreenshot&quot;));</span>
+
+<span class="nc" id="L37">    scriptBuilder.prepareActionSequence().getUrl(entryUrl).justWait(3000)</span>
+<span class="nc" id="L38">        .waitUntil(ExpectedConditions.invisibilityOfElementLocated(</span>
+<span class="nc" id="L39">            By.xpath(&quot;//div[contains(@class,'loading-frame-lc')]&quot;)), 10000)</span>
+<span class="nc" id="L40">        .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L41">            By.xpath(&quot;//div[contains(@class,'buy-list-item')]&quot;)), 10000)</span>
+<span class="nc" id="L42">        .waitUntil(ExpectedConditions.invisibilityOfElementLocated(By.xpath(</span>
+            &quot;//div[contains(@class,'buy-list-item')]/div[contains(@class,'LongInfoCardBody')]&quot;)),
+            10000)
+<span class="nc" id="L45">        .waitUntil(ExpectedConditions.visibilityOfAllElementsLocatedBy(</span>
+<span class="nc" id="L46">            By.xpath(&quot;//div[contains(@class,'buy-list-item')]&quot;)), 10000)</span>
+<span class="nc" id="L47">        .custom(ac -&gt; {</span>
+<span class="nc" id="L48">          List&lt;WebElement&gt; propertyList =</span>
+<span class="nc" id="L49">              ac.getWebDriver().findElements(By.xpath(&quot;//div[contains(@class,'buy-list-item')]&quot;));</span>
+<span class="nc" id="L50">          LOGGER.info(&quot;{} found {} properties&quot;, getName(), propertyList.size());</span>
+<span class="nc bnc" id="L51" title="All 4 branches missed.">          if (takeScreentshot &amp;&amp; propertyList.size() == 0) {</span>
+<span class="nc" id="L52">            crawlerService.takeScreenShot(ac.getWebDriver());</span>
+          }
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">          for (WebElement property : propertyList) {</span>
+            try {
+<span class="nc" id="L57">              WebElement urlE = property.findElement(By.xpath(&quot;./a&quot;));</span>
+<span class="nc" id="L58">              String url = urlE.getAttribute(&quot;href&quot;).trim();</span>
+
+<span class="nc" id="L60">              WebElement imageUrlE =</span>
+<span class="nc" id="L61">                  property.findElement(By.xpath(&quot;.//div[contains(@class,'largeImg')]/img&quot;));</span>
+<span class="nc" id="L62">              String imageUrl = imageUrlE.getAttribute(&quot;src&quot;);</span>
+
+<span class="nc" id="L64">              WebElement descRootE = property</span>
+<span class="nc" id="L65">                  .findElement(By.xpath(&quot;.//div[contains(@class,'LongInfoCard_Type_Left')]&quot;));</span>
+<span class="nc" id="L66">              WebElement descTitleE = descRootE</span>
+<span class="nc" id="L67">                  .findElement(By.xpath(&quot;./div[contains(@class,'LongInfoCard_Type_Name')]&quot;));</span>
+<span class="nc" id="L68">              String descTitle =</span>
+<span class="nc" id="L69">                  descTitleE.getText().trim().replaceAll(System.lineSeparator(), &quot; &quot;);</span>
+<span class="nc" id="L70">              List&lt;WebElement&gt; descAddressElementList = descRootE.findElements(</span>
+<span class="nc" id="L71">                  By.xpath(&quot;./div[contains(@class,'LongInfoCard_Type_Address')]/span&quot;));</span>
+<span class="nc" id="L72">              String descAddress = descAddressElementList.stream().map(s -&gt; s.getText().trim())</span>
+<span class="nc bnc" id="L73" title="All 2 branches missed.">                  .filter(s -&gt; !s.isBlank()).collect(Collectors.joining(&quot; &quot;));</span>
+<span class="nc" id="L74">              List&lt;WebElement&gt; descOtherElementList = descRootE.findElements(</span>
+<span class="nc" id="L75">                  By.xpath(&quot;./div[contains(@class,'LongInfoCard_Type_HouseInfo')]/span&quot;));</span>
+<span class="nc" id="L76">              String descOther =</span>
+<span class="nc" id="L77">                  descOtherElementList.stream().map(s -&gt; s.getText().trim().replaceAll(&quot; &quot;, &quot;&quot;))</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                      .filter(s -&gt; !s.isBlank()).collect(Collectors.joining(&quot; &quot;));</span>
+<span class="nc" id="L79">              WebElement descParkingE = descRootE</span>
+<span class="nc" id="L80">                  .findElement(By.xpath(&quot;./span[contains(@class,'LongInfoCard_Type_Parking')]&quot;));</span>
+<span class="nc" id="L81">              String descParking = descParkingE.getText().trim();</span>
+
+<span class="nc" id="L83">              String description = descTitle + System.lineSeparator() + descAddress</span>
+<span class="nc" id="L84">                  + System.lineSeparator() + descOther</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                  + (descParking.isBlank() ? &quot;&quot; : System.lineSeparator() + descParking);</span>
+
+<span class="nc" id="L87">              WebElement priceE = property.findElement(</span>
+<span class="nc" id="L88">                  By.xpath(&quot;(.//div[contains(@class,'LongInfoCard_Type_Right')]/div)[2]&quot;));</span>
+<span class="nc" id="L89">              String price = priceE.getText().trim();</span>
+
+              // process for parsed element
+<span class="nc" id="L92">              this.processSaleHouse(site, url, imageUrl, description, price, botName, chatId,</span>
+                  chatToken);
+<span class="nc" id="L94">            } catch (Exception ex) {</span>
+<span class="nc" id="L95">              LOGGER.warn(this.getClass().getName() + &quot; encounter error&quot;, ex);</span>
+<span class="nc" id="L96">            }</span>
+<span class="nc" id="L97">          }</span>
+<span class="nc" id="L98">        }).returnToComposerBuilder();</span>
+<span class="nc" id="L99">  }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>
