@@ -9,7 +9,7 @@ import java.util.Set;
 import org.kquiet.browser.ActionComposerBuilder;
 import org.kquiet.browser.BasicActionComposer;
 import org.kquiet.browserjob.crawler.CrawlerBeanConfiguration;
-import org.kquiet.browserjob.crawler.CrawlerService;
+import org.kquiet.browserjob.crawler.service.CrawlerService;
 import org.kquiet.browserscheduler.BrowserSchedulerConfig.JobConfig;
 import org.kquiet.browserscheduler.JobBase;
 import org.openqa.selenium.By;

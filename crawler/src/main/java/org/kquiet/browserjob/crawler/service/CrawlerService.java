@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler;
+package org.kquiet.browserjob.crawler.service;
 
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;

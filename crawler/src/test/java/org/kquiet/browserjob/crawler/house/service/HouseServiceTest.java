@@ -1,4 +1,4 @@
-package org.kquiet.browserjob.crawler.house591;
+package org.kquiet.browserjob.crawler.house.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -6,16 +6,17 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.kquiet.browserjob.crawler.house591.dao.RentHouseRepository;
-import org.kquiet.browserjob.crawler.house591.dao.SaleHouseRepository;
-import org.kquiet.browserjob.crawler.house591.entity.RentHouse;
-import org.kquiet.browserjob.crawler.house591.entity.SaleHouse;
+import org.kquiet.browserjob.crawler.house.dao.RentHouseRepository;
+import org.kquiet.browserjob.crawler.house.dao.SaleHouseRepository;
+import org.kquiet.browserjob.crawler.house.entity.RentHouse;
+import org.kquiet.browserjob.crawler.house.entity.SaleHouse;
+import org.kquiet.browserjob.crawler.house.service.HouseService;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class House591ServiceTest {
+class HouseServiceTest {
   @Mock
   RentHouseRepository rentHouseRepo;
 
@@ -23,7 +24,7 @@ class House591ServiceTest {
   SaleHouseRepository saleHouseRepo;
 
   @InjectMocks
-  House591Service house591Service;
+  HouseService house591Service;
 
   @ParameterizedTest()
   @CsvSource({"url1"})
