@@ -42,7 +42,7 @@ public class CrawlerIntegrationTest {
   private static final String PROPERTY_DATABASE_URL = "crawler.dataSource.jdbcUrl";
   private static final String PROPERTY_DATABASE_USERNAME = "crawler.dataSource.username";
   private static final String PROPERTY_DATABASE_PASSWORD = "crawler.dataSource.password";
-  private static final String JDBC_DATABASE_IMAGE = "mysql:8.0.32";
+  private static final String JDBC_DATABASE_IMAGE = "mysql:8.0.37";
 
   @Container
   private static JdbcDatabaseContainer<?> JDBC_DATABASE_CONTAINER =
