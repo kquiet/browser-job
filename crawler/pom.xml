@@ -4,7 +4,7 @@
   <parent>
     <groupId>org.kquiet</groupId>
     <artifactId>browser-job</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.1</version>
   </parent>
   <artifactId>crawler</artifactId>
   <version>0.1.15-SNAPSHOT</version>
@@ -14,22 +14,22 @@
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
 
-    <opentelemetry.instrumentation.annotation.version>1.24.0</opentelemetry.instrumentation.annotation.version>
-    <slf4j.version>2.0.9</slf4j.version>
-    <selenium.version>4.8.3</selenium.version>
+    <opentelemetry.instrumentation.annotation.version>2.3.0</opentelemetry.instrumentation.annotation.version>
+    <slf4j.version>2.0.13</slf4j.version>
+    <selenium.version>4.20.0</selenium.version>
     <hecate.version>0.0.4</hecate.version>
-    <browserscheduler.version>2.0.7</browserscheduler.version>
-    <auto-browser.version>2.0.6</auto-browser.version>
-    <spring.boot.version>3.1.6</spring.boot.version>
+    <browserscheduler.version>2.0.8</browserscheduler.version>
+    <auto-browser.version>2.0.7</auto-browser.version>
+    <spring.boot.version>3.2.5</spring.boot.version>
     <flyway.version>9.22.3</flyway.version>
 
-    <mysql-connector-j.version>8.2.0</mysql-connector-j.version>
+    <mysql-connector-j.version>8.4.0</mysql-connector-j.version>
     <logstash-logback-encoder.version>7.4</logstash-logback-encoder.version>
 
-    <junit.version>5.9.2</junit.version>
-    <mockito.version>5.2.0</mockito.version>
-    <testcontainers.version>1.18.0</testcontainers.version>
-    <mockwebserver.version>4.10.0</mockwebserver.version>
+    <junit.version>5.10.2</junit.version>
+    <mockito.version>5.11.0</mockito.version>
+    <testcontainers.version>1.19.7</testcontainers.version>
+    <mockwebserver.version>4.12.0</mockwebserver.version>
   </properties>
 
   <dependencyManagement>
