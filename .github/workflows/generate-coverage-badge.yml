@@ -18,7 +18,7 @@ jobs:
         rm -rf .github/coverage/${{ inputs.module }}
         mkdir -p .github/coverage/${{ inputs.module }}
     - name: Download JaCoCo coverage report
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4.1.7
       with:
         name: jacoco-report
         path: .github/coverage/${{ inputs.module }}
